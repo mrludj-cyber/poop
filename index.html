@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>다람쥐의 배변 정복기 🐿️</title>
+    <title>다람쥐의 세계 정복기 🐿️</title>
     <style>
         /* --- 기본 스타일 --- */
         body, html { height: 100%; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; background-color: #f5f5f5; overflow: hidden; }
@@ -15,60 +15,14 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1s ease-out;
         }
+        .intro-container { position: relative; width: 300px; height: 400px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 50px; }
+        .intro-globe { width: 140px; height: 140px; z-index: 1; animation: spin 10s linear infinite; margin-bottom: 20px; }
+        .intro-squirrel { position: absolute; bottom: 205px; width: 200px; left: 50px; right: 0; margin-left: auto; margin-right: auto; z-index: 2; animation: walk 0.6s ease-in-out infinite alternate; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        @keyframes walk { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-15px) rotate(5deg); } }
+        .intro-text { margin-top: 20px; font-size: 22px; font-weight: bold; color: #8B4513; text-align: center; line-height: 1.5; }
 
-        .intro-container {
-            position: relative;
-            /* 그림들이 커지니 컨테이너도 넉넉하게 키워줍니다 */
-            width: 300px;
-            height: 400px; 
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 50px; /* 바닥에서 조금 띄움 */
-        }
-
-        .intro-globe { 
-            /* 1:1 비율을 위해 다람쥐랑 똑같이 맞춤 */
-            width: 140px; 
-            height: 140px;
-            z-index: 1; 
-            animation: spin 10s linear infinite; 
-            margin-bottom: 20px; /* 바닥에서 약간 띄움 */
-        }
-
-        .intro-squirrel { 
-            position: absolute;
-            
-            /* 핵심: 지구본 높이(150px) + 여백(20px) - 발이 겹치는 정도(35px) */
-            /* 이 숫자를 조절하면 다람쥐가 위아래로 움직입니다 */
-            bottom: 205px; 
-            
-            /* 1:1 비율을 위해 지구본이랑 똑같이 맞춤 */
-            width: 200px; 
-            left: 50px;
-            right: 0;
-            margin-left: auto;
-            margin-right: auto;
-            
-            z-index: 2; 
-            animation: walk 0.6s ease-in-out infinite alternate;
-        }
-        
-        @keyframes spin { 
-            from { transform: rotate(0deg); } 
-            to { transform: rotate(-360deg); } 
-        }
-        @keyframes walk { 
-            from { transform: translateY(0) rotate(-5deg); } 
-            to { transform: translateY(-15px) rotate(5deg); } 
-        }
-
-        .intro-text { 
-            margin-top: 20px; font-size: 22px; font-weight: bold; color: #8B4513; 
-            text-align: center; line-height: 1.5;
-        }
-
-        /* --- 기존 UI 유지 --- */
+        /* --- UI 요소 --- */
         .tab-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 10; }
         .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: #888; cursor: pointer; }
         .tab-item.active { color: #8B4513; font-weight: bold; }
@@ -77,8 +31,9 @@
         #map-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; }
         #list-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; background: #fdfdfd; display: none; overflow-y: auto; padding-bottom: 20px; }
 
+        /* 메인 버튼 (정복 시작) */
         #conquer-btn {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 5; background-color: #8B4513; color: white;
             border: 3px solid #D2691E; padding: 15px 30px; font-size: 18px;
             border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
@@ -86,6 +41,55 @@
         }
         #conquer-btn:active { transform: translateX(-50%) scale(0.95); background-color: #5D2906; }
 
+        /* 위치 확정 버튼 (조정 후 저장) */
+        #confirm-btn {
+            display: none; /* 초기엔 숨김 */
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 6; background-color: #228B22; color: white;
+            border: 3px solid #006400; padding: 15px 30px; font-size: 18px;
+            border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            font-weight: bold; cursor: pointer; white-space: nowrap;
+        }
+
+        /* 안내 문구 (위치 조정 시) */
+        #guide-msg {
+            display: none;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9); padding: 10px 20px; border-radius: 20px;
+            font-weight: bold; color: #8B4513; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 5;
+            text-align: center; width: 80%;
+        }
+
+        /* --- 정복 액션 애니메이션 (CSS로 구현) --- */
+        #action-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); z-index: 2000;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        .action-squirrel {
+            font-size: 80px;
+            animation: shakeButt 0.5s ease-in-out infinite;
+        }
+        .action-acorn {
+            font-size: 40px;
+            opacity: 0;
+            margin-top: -20px;
+            animation: dropAcorn 1s ease-out forwards;
+            animation-delay: 1s; /* 다람쥐 흔들고 1초 뒤에 떨어짐 */
+        }
+        @keyframes shakeButt {
+            0% { transform: rotate(0deg) translateY(0); }
+            25% { transform: rotate(-10deg) translateY(5px); }
+            75% { transform: rotate(10deg) translateY(5px); }
+            100% { transform: rotate(0deg) translateY(0); }
+        }
+        @keyframes dropAcorn {
+            0% { transform: translateY(-20px) scale(0.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100px) scale(1.2); opacity: 1; }
+        }
+
+        /* 리스트 스타일 */
         .stats-box { background: #8B4513; color: white; padding: 20px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
         .stats-count { font-size: 28px; font-weight: bold; }
         .log-item { background: white; margin: 15px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
@@ -94,6 +98,7 @@
         .log-note { background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; color: #555; border-left: 3px solid #8B4513; }
         .btn-edit { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; background: none; border: none; }
 
+        /* 모달 */
         #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 80%; }
         .modal-input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
@@ -104,13 +109,9 @@
 </head>
 <body>
 
+    <!-- 인트로 -->
     <div id="intro-screen">
         <div class="intro-container">
-            <!-- 
-               [중요] onerror 속성을 제거했습니다. 
-               이미지가 안 뜨면 '깨진 아이콘'이 보여야 정상입니다.
-               깨진 아이콘이 보인다면 파일명/경로 문제입니다.
-            -->
             <img src="./squirrel.png" class="intro-squirrel" alt="다람쥐">
             <img src="./globe.png" class="intro-globe" alt="지구본">
         </div>
@@ -119,14 +120,29 @@
         </div>
     </div>
 
-    <!-- 이하 코드는 동일 -->
+    <!-- 정복 액션 애니메이션 오버레이 -->
+    <div id="action-overlay">
+        <div class="action-squirrel">🐿️</div>
+        <div class="action-acorn">🌰</div>
+        <div style="color:white; font-weight:bold; margin-top:20px; font-size:20px;">영역 표시 중...</div>
+    </div>
+
+    <!-- 지도 탭 -->
     <div id="map-container">
         <div id="map" style="width: 100%; height: 100%;"></div>
-        <button id="conquer-btn" onclick="conquerCurrentLocation()">
-            <span>🚩</span> 정복 완료!
+        
+        <div id="guide-msg">원 안에서 마커를 드래그해<br>정확한 위치를 찍어주세요!</div>
+        
+        <button id="conquer-btn" onclick="startConquestMode()">
+            <span>🚩</span> 정복하기
+        </button>
+        
+        <button id="confirm-btn" onclick="confirmLocationAndSave()">
+             🙆‍♂️ 여기로 확정!
         </button>
     </div>
 
+    <!-- 리스트 탭 -->
     <div id="list-container">
         <div class="stats-box">
             <div style="font-size: 14px; opacity: 0.9;">현재 다람쥐의 정복 현황</div>
@@ -136,6 +152,7 @@
         <div id="log-list-area"></div>
     </div>
 
+    <!-- 하단 탭바 -->
     <div class="tab-bar">
         <div class="tab-item active" onclick="switchTab('map')" id="tab-map">
             <span class="tab-icon">🗺️</span>지도
@@ -145,6 +162,7 @@
         </div>
     </div>
 
+    <!-- 수정 모달 -->
     <div id="edit-modal">
         <div class="modal-content">
             <h3 style="margin-top:0; color:#8B4513;">정복 기록 수정 🐿️</h3>
@@ -166,91 +184,221 @@
     <script>
         let map;
         let geocoder;
+        let activeSelectionMarker = null; // 위치 조정용 마커
+        let activeCircle = null;          // 100m 반경 원
 
         function initMap() {
-            // 인트로 화면 3초 후 사라짐
             setTimeout(() => {
                 document.getElementById('intro-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('intro-screen').style.display = 'none';
-                }, 1000);
+                setTimeout(() => { document.getElementById('intro-screen').style.display = 'none'; }, 1000);
             }, 3000);
 
             geocoder = new google.maps.Geocoder();
+            // 기본 서울 좌표
             const startPos = { lat: 37.5665, lng: 126.9780 };
+            
+            // 1. [요청반영] zoom을 17로 설정하여 초기부터 상세하게(동/건물 단위) 보이게 함
             map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 16, center: startPos, disableDefaultUI: false, clickableIcons: false
+                zoom: 17, 
+                center: startPos, 
+                disableDefaultUI: false, 
+                clickableIcons: false,
+                streetViewControl: false, // 모바일에서 깔끔하게 보이기 위해
+                mapTypeControl: false
             });
 
-            loadConquests();
+            loadConquests(); // 저장된 도토리들 불러오기
 
+            // 현재 위치로 지도 이동
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
                     map.setCenter(pos);
-                    new google.maps.Marker({ position: pos, map: map, label: { text: "🐿️", fontSize: "30px" }, zIndex: 999 });
+                    // 현재 내 위치 표시 (다람쥐)
+                    new google.maps.Marker({ 
+                        position: pos, 
+                        map: map, 
+                        label: { text: "🐿️", fontSize: "30px" }, 
+                        zIndex: 999 
+                    });
                 });
             }
         }
 
-        function conquerCurrentLocation() {
+        // --- 2. [요청반영] 정복 모드 시작 (위치 조정 단계) ---
+        function startConquestMode() {
             if (!navigator.geolocation) { alert("위치 정보를 사용할 수 없습니다."); return; }
+            
             navigator.geolocation.getCurrentPosition((position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                    let country = "미지의 땅", region = "어딘가", flag = "🏳️";
-                    if (status === "OK" && results[0]) {
-                        results[0].address_components.forEach(comp => {
-                            if (comp.types.includes("country")) {
-                                country = comp.long_name;
-                                if(country === "대한민국") flag = "🇰🇷";
-                                else if(country === "미국") flag = "🇺🇸";
-                                else if(country === "일본") flag = "🇯🇵";
-                                else flag = "🚩";
-                            }
-                            if (comp.types.includes("administrative_area_level_1")) region = comp.long_name;
-                        });
-                    }
-                    const newConquest = {
-                        id: Date.now(), lat: lat, lng: lng,
-                        time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
-                        country: country, region: region, flag: flag,
-                        placeName: `${region}의 정복지`, note: "영역 표시 완료! 쾌적했음."
-                    };
-                    let list = getList(); list.push(newConquest); saveList(list); addMarker(newConquest);
-                    if(navigator.vibrate) navigator.vibrate(200);
-                    alert("정복 완료! 🐿️\n지구 정복에 한 발짝 다가갔습니다.");
+                const currentLat = position.coords.latitude;
+                const currentLng = position.coords.longitude;
+                const currentPos = { lat: currentLat, lng: currentLng };
+
+                map.setCenter(currentPos);
+                map.setZoom(18); // 조정하기 쉽게 더 확대
+
+                // 이미 조정 중이면 리셋
+                if(activeSelectionMarker) activeSelectionMarker.setMap(null);
+                if(activeCircle) activeCircle.setMap(null);
+
+                // 2. [요청반영] 100m 반경 원 그리기
+                activeCircle = new google.maps.Circle({
+                    strokeColor: "#8B4513",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#8B4513",
+                    fillOpacity: 0.15,
+                    map: map,
+                    center: currentPos,
+                    radius: 100 // 100미터
                 });
+
+                // 2. [요청반영] 드래그 가능한 마커 생성
+                activeSelectionMarker = new google.maps.Marker({
+                    position: currentPos,
+                    map: map,
+                    draggable: true, // 드래그 가능!
+                    label: { text: "🌰", fontSize: "40px" }, // 3. [요청반영] 도토리 아이콘
+                    animation: google.maps.Animation.DROP
+                });
+
+                // UI 변경 (정복버튼 숨기고, 확정버튼 표시)
+                document.getElementById('conquer-btn').style.display = 'none';
+                document.getElementById('confirm-btn').style.display = 'block';
+                document.getElementById('guide-msg').style.display = 'block';
+
+            }, () => {
+                alert("GPS 위치를 가져오는데 실패했습니다.");
             });
         }
 
+        // --- 위치 확정 및 저장 ---
+        function confirmLocationAndSave() {
+            if(!activeSelectionMarker) return;
+
+            // 최종 선택된 위치 가져오기
+            const finalPos = activeSelectionMarker.getPosition();
+            const lat = finalPos.lat();
+            const lng = finalPos.lng();
+
+            // 4. [요청반영] CSS 애니메이션 실행 (GIF 대신)
+            const overlay = document.getElementById('action-overlay');
+            overlay.style.display = 'flex';
+
+            // 2초 뒤에 데이터 저장 및 UI 복귀
+            setTimeout(() => {
+                saveData(lat, lng);
+                overlay.style.display = 'none';
+                
+                // UI 복귀
+                document.getElementById('conquer-btn').style.display = 'flex';
+                document.getElementById('confirm-btn').style.display = 'none';
+                document.getElementById('guide-msg').style.display = 'none';
+                
+                // 조정용 마커/원 제거
+                activeSelectionMarker.setMap(null);
+                activeCircle.setMap(null);
+                activeSelectionMarker = null;
+                activeCircle = null;
+
+            }, 2500); // 애니메이션 시간 얼추 맞춤
+        }
+
+        function saveData(lat, lng) {
+            // 위치 기반 주소 변환 (Geocoding)
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                let country = "미지의 땅", region = "어딘가", flag = "🏳️";
+                
+                if (status === "OK" && results[0]) {
+                    // 주소 구성요소 분석
+                    results[0].address_components.forEach(comp => {
+                        if (comp.types.includes("country")) {
+                            country = comp.long_name;
+                            if(country === "대한민국") flag = "🇰🇷";
+                            else if(country === "미국") flag = "🇺🇸";
+                            else if(country === "일본") flag = "🇯🇵";
+                            else flag = "🚩";
+                        }
+                        // 1. [요청반영] 행정구역 명칭 (시/도 혹은 구/군)
+                        if (comp.types.includes("administrative_area_level_1") || comp.types.includes("locality")) {
+                             region = comp.long_name;
+                        }
+                        // 동/읍/면 정보가 있으면 그걸로 region 덮어쓰기 (더 상세하게)
+                        if (comp.types.includes("sublocality_level_2") || comp.types.includes("neighborhood")) {
+                             region = comp.long_name;
+                        }
+                    });
+                }
+
+                const newConquest = {
+                    id: Date.now(),
+                    lat: lat, 
+                    lng: lng,
+                    time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
+                    country: country,
+                    region: region, // 동 단위 혹은 구 단위
+                    flag: flag,
+                    placeName: `${region}의 도토리`, // 기본 이름
+                    note: "영역 표시 완료! 든든하다."
+                };
+
+                let list = getList();
+                list.push(newConquest);
+                saveList(list);
+                
+                addMarker(newConquest); // 지도에 고정 마커 추가
+                if(navigator.vibrate) navigator.vibrate(200);
+            });
+        }
+
+        // 지도에 마커 찍기 (저장된 데이터)
         function addMarker(data) {
             const marker = new google.maps.Marker({
-                position: { lat: data.lat, lng: data.lng }, map: map, label: { text: "💩", fontSize: "20px" }
+                position: { lat: data.lat, lng: data.lng },
+                map: map,
+                // 3. [요청반영] 똥(💩) 대신 도토리(🌰) 아이콘 사용
+                label: { text: "🌰", fontSize: "20px" } 
             });
-            const infoWindow = new google.maps.InfoWindow({ content: `<div style="text-align:center;"><b>${data.placeName}</b><br>${data.time}</div>` });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<div style="text-align:center; padding:5px;">
+                            <div style="font-size:16px; font-weight:bold;">${data.placeName}</div>
+                            <div style="font-size:12px; color:#555;">${data.time}</div>
+                          </div>`
+            });
+
             marker.addListener("click", () => infoWindow.open(map, marker));
         }
 
+        /* --- 데이터 관리 (localStorage) --- */
         function getList() { return JSON.parse(localStorage.getItem('conquestList')) || []; }
         function saveList(list) { localStorage.setItem('conquestList', JSON.stringify(list)); renderList(); }
-        function loadConquests() { getList().forEach(item => addMarker(item)); renderList(); }
+        
+        function loadConquests() {
+            getList().forEach(item => addMarker(item));
+            renderList();
+        }
 
         function renderList() {
             const list = getList().reverse();
             const container = document.getElementById('log-list-area');
             container.innerHTML = "";
-            document.getElementById('total-count').innerText = `${list.length}곳 정복함`;
+            document.getElementById('total-count').innerText = `${list.length}개의 도토리 심음`;
+            
             const countryCounts = {};
             list.forEach(item => { countryCounts[item.country] = (countryCounts[item.country] || 0) + 1; });
+            
             let statsText = [];
             for (const [country, count] of Object.entries(countryCounts)) statsText.push(`${country} ${count}`);
             document.getElementById('country-stats').innerText = statsText.join('  |  ');
+
             list.forEach(item => {
                 const div = document.createElement('div'); div.className = 'log-item';
                 div.innerHTML = `
-                    <div class="log-header"><div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div><button class="btn-edit" onclick="openEditModal(${item.id})">✎</button></div>
+                    <div class="log-header">
+                        <div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div>
+                        <button class="btn-edit" onclick="openEditModal(${item.id})">✎</button>
+                    </div>
                     <div style="font-size:12px; color:#777; margin-bottom:8px;">${item.country} ${item.region} | ${item.time}</div>
                     <div class="log-note">${item.note}</div>
                 `;
@@ -258,6 +406,7 @@
             });
         }
 
+        /* --- 모달 및 탭 기능 (기존 동일) --- */
         function openEditModal(id) {
             const item = getList().find(x => x.id === id);
             if(item) {
@@ -268,6 +417,7 @@
             }
         }
         function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+        
         function saveEdit() {
             const id = parseInt(document.getElementById('edit-id').value);
             let list = getList();
@@ -278,14 +428,16 @@
                 saveList(list); closeModal();
             }
         }
+        
         function deleteLog() {
-            if(confirm("정복 기록을 지우시겠습니까?")) {
+            if(confirm("이 도토리를 파내시겠습니까?")) {
                 const id = parseInt(document.getElementById('edit-id').value);
                 let list = getList();
                 list = list.filter(x => x.id !== id);
                 saveList(list); closeModal(); location.reload();
             }
         }
+        
         function switchTab(tabName) {
             if (tabName === 'map') {
                 document.getElementById('map-container').style.display = 'block';
