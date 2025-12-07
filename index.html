@@ -18,27 +18,35 @@
 
         .intro-container {
             position: relative;
-            width: 200px;
-            height: 250px;
+            /* 그림들이 커지니 컨테이너도 넉넉하게 키워줍니다 */
+            width: 300px;
+            height: 350px; 
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            /* 디버깅: 컨테이너 위치 확인용 (잘 되면 지우세요) */
-            /* border: 1px dashed blue; */
+            /* 디버깅용 테두리 (위치 확인 후 지우세요) */
+            /* border: 1px dashed red; */
         }
 
         .intro-globe { 
-            width: 50px; 
-            height: 50px;
+            /* 1:1 비율을 위해 다람쥐랑 똑같이 맞춤 */
+            width: 150px; 
+            height: 150px;
             z-index: 1; 
             animation: spin 10s linear infinite; 
-            /* mix-blend-mode 삭제됨 */
+            margin-bottom: 20px; /* 바닥에서 약간 띄움 */
         }
 
         .intro-squirrel { 
             position: absolute;
-            bottom: 110px; 
-            width: 200px; 
+            
+            /* 핵심: 지구본 높이(150px) + 여백(20px) - 발이 겹치는 정도(35px) */
+            /* 이 숫자를 조절하면 다람쥐가 위아래로 움직입니다 */
+            bottom: 135px; 
+            
+            /* 1:1 비율을 위해 지구본이랑 똑같이 맞춤 */
+            width: 150px; 
+            
             z-index: 2; 
             animation: walk 0.6s ease-in-out infinite alternate;
         }
