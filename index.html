@@ -8,7 +8,7 @@
         /* --- 기본 스타일 --- */
         body, html { height: 100%; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; background-color: #f5f5f5; overflow: hidden; }
         
-        /* --- 인트로 화면 (커스텀 이미지 적용) --- */
+        /* --- 인트로 화면 --- */
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #FFF8E1; z-index: 9999;
@@ -23,38 +23,37 @@
             display: flex;
             justify-content: center;
             align-items: flex-end;
+            /* 디버깅: 컨테이너 위치 확인용 (잘 되면 지우세요) */
+            /* border: 1px dashed blue; */
         }
 
-        /* 1. 지구본 (Image 3) - 빙글빙글 회전 */
         .intro-globe { 
-            width: 100px; 
-            height: 100px;
+            width: 150px; 
+            height: 150px;
             z-index: 1; 
-            animation: spin 4s linear infinite; 
-            mix-blend-mode: multiply; /* 흰색 배경 투명하게 */
+            animation: spin 10s linear infinite; 
+            /* mix-blend-mode 삭제됨 */
         }
 
-        /* 2. 다람쥐 (Image 2) - 위에서 걷는 모션 */
         .intro-squirrel { 
             position: absolute;
-            bottom: 55px; /* 지구본 위에 딱 맞게 조정 */
-            width: 130px; /* 다람쥐 크기 */
+            bottom: 110px; 
+            width: 100px; 
             z-index: 2; 
             animation: walk 0.6s ease-in-out infinite alternate;
         }
         
-        /* 애니메이션 정의 */
         @keyframes spin { 
             from { transform: rotate(0deg); } 
             to { transform: rotate(-360deg); } 
         }
         @keyframes walk { 
-            from { transform: translateY(0) rotate(-3deg); } 
-            to { transform: translateY(-10px) rotate(3deg); } 
+            from { transform: translateY(0) rotate(-5deg); } 
+            to { transform: translateY(-15px) rotate(5deg); } 
         }
 
         .intro-text { 
-            margin-top: 30px; font-size: 22px; font-weight: bold; color: #8B4513; 
+            margin-top: 20px; font-size: 22px; font-weight: bold; color: #8B4513; 
             text-align: center; line-height: 1.5;
         }
 
@@ -84,7 +83,6 @@
         .log-note { background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; color: #555; border-left: 3px solid #8B4513; }
         .btn-edit { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; background: none; border: none; }
 
-        /* 수정 모달 */
         #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 80%; }
         .modal-input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
@@ -95,23 +93,22 @@
 </head>
 <body>
 
-    <!-- 1. 인트로 화면 (업데이트됨) -->
     <div id="intro-screen">
         <div class="intro-container">
-            <!-- 걷는 다람쥐 (Image 2) -->
+            <!-- 
+               [중요] onerror 속성을 제거했습니다. 
+               이미지가 안 뜨면 '깨진 아이콘'이 보여야 정상입니다.
+               깨진 아이콘이 보인다면 파일명/경로 문제입니다.
+            -->
             <img src="./squirrel.png" class="intro-squirrel" alt="다람쥐">
-            <!-- 회전하는 지구본 (Image 3) -->
             <img src="./globe.png" class="intro-globe" alt="지구본">
-            
-            <!-- 이미지가 없을 경우를 대비한 이모지 백업 (이미지 있으면 안보임) -->
-            <div id="backup-emoji" style="position:absolute; display:none; font-size:80px;">🐿️🌍</div>
         </div>
         <div class="intro-text">
             지구 정복하러<br>출동한다람쥐! 🐿️💨
         </div>
     </div>
 
-    <!-- 2. 메인 지도 탭 -->
+    <!-- 이하 코드는 동일 -->
     <div id="map-container">
         <div id="map" style="width: 100%; height: 100%;"></div>
         <button id="conquer-btn" onclick="conquerCurrentLocation()">
@@ -119,7 +116,6 @@
         </button>
     </div>
 
-    <!-- 3. 정복 리스트 탭 -->
     <div id="list-container">
         <div class="stats-box">
             <div style="font-size: 14px; opacity: 0.9;">현재 다람쥐의 정복 현황</div>
@@ -129,7 +125,6 @@
         <div id="log-list-area"></div>
     </div>
 
-    <!-- 4. 하단 탭바 -->
     <div class="tab-bar">
         <div class="tab-item active" onclick="switchTab('map')" id="tab-map">
             <span class="tab-icon">🗺️</span>지도
@@ -139,7 +134,6 @@
         </div>
     </div>
 
-    <!-- 5. 수정 모달 -->
     <div id="edit-modal">
         <div class="modal-content">
             <h3 style="margin-top:0; color:#8B4513;">정복 기록 수정 🐿️</h3>
@@ -154,24 +148,16 @@
         </div>
     </div>
 
-    <!-- 구글 맵 API -->
     <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5LgbtPjepR9nuQ4TUjyRknmC9JgKodWo&libraries=places&callback=initMap">
     </script>
 
     <script>
         let map;
-        let markers = [];
         let geocoder;
 
         function initMap() {
-            // 이미지 로드 실패 시 이모지 보여주기 체크
-            const imgCheck = document.querySelector('.intro-squirrel');
-            if(imgCheck.naturalWidth === 0) {
-                document.getElementById('backup-emoji').style.display = 'block';
-            }
-
-            // 인트로 3초 후 사라짐
+            // 인트로 화면 3초 후 사라짐
             setTimeout(() => {
                 document.getElementById('intro-screen').style.opacity = '0';
                 setTimeout(() => {
@@ -180,84 +166,48 @@
             }, 3000);
 
             geocoder = new google.maps.Geocoder();
-
             const startPos = { lat: 37.5665, lng: 126.9780 };
             map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 16,
-                center: startPos,
-                disableDefaultUI: false,
-                clickableIcons: false
+                zoom: 16, center: startPos, disableDefaultUI: false, clickableIcons: false
             });
 
             loadConquests();
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
-                    const pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    };
+                    const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
                     map.setCenter(pos);
-                    // 내 위치 마커 (다람쥐 이모지)
-                    new google.maps.Marker({
-                        position: pos,
-                        map: map,
-                        label: { text: "🐿️", fontSize: "30px" },
-                        zIndex: 999
-                    });
+                    new google.maps.Marker({ position: pos, map: map, label: { text: "🐿️", fontSize: "30px" }, zIndex: 999 });
                 });
             }
         }
 
         function conquerCurrentLocation() {
-            if (!navigator.geolocation) {
-                alert("위치 정보를 사용할 수 없습니다.");
-                return;
-            }
-
+            if (!navigator.geolocation) { alert("위치 정보를 사용할 수 없습니다."); return; }
             navigator.geolocation.getCurrentPosition((position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                const latlng = { lat: lat, lng: lng };
-
-                geocoder.geocode({ location: latlng }, (results, status) => {
-                    let country = "미지의 땅";
-                    let region = "어딘가";
-                    let flag = "🏳️";
-
+                geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                    let country = "미지의 땅", region = "어딘가", flag = "🏳️";
                     if (status === "OK" && results[0]) {
-                        const addressComponents = results[0].address_components;
-                        addressComponents.forEach(component => {
-                            if (component.types.includes("country")) {
-                                country = component.long_name;
+                        results[0].address_components.forEach(comp => {
+                            if (comp.types.includes("country")) {
+                                country = comp.long_name;
                                 if(country === "대한민국") flag = "🇰🇷";
                                 else if(country === "미국") flag = "🇺🇸";
                                 else if(country === "일본") flag = "🇯🇵";
                                 else flag = "🚩";
                             }
-                            if (component.types.includes("administrative_area_level_1")) {
-                                region = component.long_name;
-                            }
+                            if (comp.types.includes("administrative_area_level_1")) region = comp.long_name;
                         });
                     }
-
                     const newConquest = {
-                        id: Date.now(),
-                        lat: lat,
-                        lng: lng,
+                        id: Date.now(), lat: lat, lng: lng,
                         time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
-                        country: country,
-                        region: region,
-                        flag: flag,
-                        placeName: `${region}의 정복지`,
-                        note: "영역 표시 완료! 쾌적했음."
+                        country: country, region: region, flag: flag,
+                        placeName: `${region}의 정복지`, note: "영역 표시 완료! 쾌적했음."
                     };
-
-                    let list = getList();
-                    list.push(newConquest);
-                    saveList(list);
-                    addMarker(newConquest);
-                    
+                    let list = getList(); list.push(newConquest); saveList(list); addMarker(newConquest);
                     if(navigator.vibrate) navigator.vibrate(200);
                     alert("정복 완료! 🐿️\n지구 정복에 한 발짝 다가갔습니다.");
                 });
@@ -266,13 +216,9 @@
 
         function addMarker(data) {
             const marker = new google.maps.Marker({
-                position: { lat: data.lat, lng: data.lng },
-                map: map,
-                label: { text: "💩", fontSize: "20px" }
+                position: { lat: data.lat, lng: data.lng }, map: map, label: { text: "💩", fontSize: "20px" }
             });
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<div style="text-align:center;"><b>${data.placeName}</b><br>${data.time}</div>`
-            });
+            const infoWindow = new google.maps.InfoWindow({ content: `<div style="text-align:center;"><b>${data.placeName}</b><br>${data.time}</div>` });
             marker.addListener("click", () => infoWindow.open(map, marker));
         }
 
@@ -284,22 +230,16 @@
             const list = getList().reverse();
             const container = document.getElementById('log-list-area');
             container.innerHTML = "";
-
             document.getElementById('total-count').innerText = `${list.length}곳 정복함`;
             const countryCounts = {};
             list.forEach(item => { countryCounts[item.country] = (countryCounts[item.country] || 0) + 1; });
             let statsText = [];
-            for (const [country, count] of Object.entries(countryCounts)) { statsText.push(`${country} ${count}`); }
+            for (const [country, count] of Object.entries(countryCounts)) statsText.push(`${country} ${count}`);
             document.getElementById('country-stats').innerText = statsText.join('  |  ');
-
             list.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'log-item';
+                const div = document.createElement('div'); div.className = 'log-item';
                 div.innerHTML = `
-                    <div class="log-header">
-                        <div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div>
-                        <button class="btn-edit" onclick="openEditModal(${item.id})">✎</button>
-                    </div>
+                    <div class="log-header"><div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div><button class="btn-edit" onclick="openEditModal(${item.id})">✎</button></div>
                     <div style="font-size:12px; color:#777; margin-bottom:8px;">${item.country} ${item.region} | ${item.time}</div>
                     <div class="log-note">${item.note}</div>
                 `;
@@ -308,8 +248,7 @@
         }
 
         function openEditModal(id) {
-            const list = getList();
-            const item = list.find(x => x.id === id);
+            const item = getList().find(x => x.id === id);
             if(item) {
                 document.getElementById('edit-id').value = id;
                 document.getElementById('edit-place').value = item.placeName;
@@ -318,7 +257,6 @@
             }
         }
         function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
-        
         function saveEdit() {
             const id = parseInt(document.getElementById('edit-id').value);
             let list = getList();
@@ -326,22 +264,17 @@
             if(index !== -1) {
                 list[index].placeName = document.getElementById('edit-place').value;
                 list[index].note = document.getElementById('edit-note').value;
-                saveList(list);
-                closeModal();
+                saveList(list); closeModal();
             }
         }
-
         function deleteLog() {
             if(confirm("정복 기록을 지우시겠습니까?")) {
                 const id = parseInt(document.getElementById('edit-id').value);
                 let list = getList();
                 list = list.filter(x => x.id !== id);
-                saveList(list);
-                closeModal();
-                location.reload();
+                saveList(list); closeModal(); location.reload();
             }
         }
-
         function switchTab(tabName) {
             if (tabName === 'map') {
                 document.getElementById('map-container').style.display = 'block';
