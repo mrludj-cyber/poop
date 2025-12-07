@@ -1,0 +1,20 @@
+{
+  "name": "다람쥐의 세계 정복기",
+  "short_name": "다람쥐정복",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFF8E1",
+  "theme_color": "#8B4513",
+  "icons": [
+    {
+      "src": "squirrel.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "squirrel.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
