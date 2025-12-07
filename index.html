@@ -373,7 +373,24 @@
         function startConquestMode() {
             if (!navigator.geolocation) { alert("위치 정보를 사용할 수 없습니다."); return; }
             
+            // [추가] 버튼을 누르자마자 "반응"을 보여줌 (사용자가 멈췄다고 생각 안 하게)
+            const btn = document.getElementById('conquer-btn');
+            const originalText = btn.innerHTML; // 원래 텍스트 저장
+            btn.innerHTML = "<span>🛰️</span> 위치 찾는 중..."; // 텍스트 변경
+            btn.style.opacity = "0.7"; // 살짝 흐리게 해서 '진행 중' 느낌 주기
+
+            // [옵션 추가] GPS 속도 개선 설정
+            const geoOptions = {
+                enableHighAccuracy: true, // 정확도 우선
+                timeout: 5000,            // 5초 안에 못 찾으면 에러 (무한 대기 방지)
+                maximumAge: 10000         // [핵심!] 최근 10초 내의 위치 정보가 있으면 그거 씀 (엄청 빨라짐)
+            };
+            
             navigator.geolocation.getCurrentPosition((position) => {
+                // 성공했을 때 원래대로 복구 (어차피 버튼 숨겨지지만 안전장치)
+                btn.innerHTML = originalText;
+                btn.style.opacity = "1";
+
                 const currentLat = position.coords.latitude;
                 const currentLng = position.coords.longitude;
                 const currentPos = { lat: currentLat, lng: currentLng };
@@ -437,14 +454,17 @@
                     findExactBuildingName(pos);
                 });
 
-                document.getElementById('conquer-btn').style.display = 'none';
+                document.getElementById('conquer-btn').style.display = 'none'; // 여기서 버튼 사라짐
                 document.getElementById('confirm-group').style.display = 'flex';
                 document.getElementById('guide-msg').style.display = 'block';
-                targetLabel.style.display = 'block'; // 시작할 때 라벨 띄우기
+                targetLabel.style.display = 'block'; 
 
             }, () => {
+                // 실패했을 때 버튼 원상복구
                 alert("GPS 위치를 가져오는데 실패했습니다.");
-            });
+                btn.innerHTML = originalText;
+                btn.style.opacity = "1";
+            }, geoOptions); // [중요] 옵션 전달
         }
 
         function searchNearbyPlaces(center) {
