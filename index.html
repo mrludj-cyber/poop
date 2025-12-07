@@ -6,95 +6,110 @@
     <title>다람쥐의 배변 정복기 🐿️</title>
     <style>
         /* --- 기본 스타일 --- */
-        body, html { height: 100%; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; background-color: #f5f5f5; }
+        body, html { height: 100%; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; background-color: #f5f5f5; overflow: hidden; }
         
-        /* --- 탭 메뉴 (하단) --- */
-        .tab-bar {
-            position: fixed; bottom: 0; width: 100%; height: 60px;
-            background: white; display: flex; justify-content: space-around;
-            align-items: center; border-top: 1px solid #ddd; z-index: 10;
-        }
-        .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: #888; cursor: pointer; }
-        .tab-item.active { color: #8B4513; font-weight: bold; }
-        .tab-icon { display: block; font-size: 20px; margin-bottom: 2px; }
-
-        /* --- 메인 화면 컨테이너 --- */
-        #map-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; }
-        #list-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; background: #fdfdfd; display: none; overflow-y: auto; padding-bottom: 20px; }
-
-        /* --- 정복 완료 버튼 --- */
-        #conquer-btn {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 5; background-color: #8B4513; color: white;
-            border: 3px solid #D2691E; padding: 15px 40px; font-size: 20px;
-            border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px;
-        }
-        #conquer-btn:active { transform: translateX(-50%) scale(0.95); background-color: #5D2906; }
-
-        /* --- 정복 리스트 스타일 --- */
-        .stats-box {
-            background: #8B4513; color: white; padding: 20px; text-align: center;
-            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
-        }
-        .stats-title { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
-        .stats-count { font-size: 28px; font-weight: bold; }
-        
-        .log-item {
-            background: white; margin: 15px; padding: 15px; border-radius: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;
-        }
-        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .log-flag { font-size: 24px; margin-right: 10px; }
-        .log-place { font-weight: bold; font-size: 18px; color: #333; }
-        .log-addr { font-size: 12px; color: #777; margin-bottom: 10px; }
-        .log-note { 
-            background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; 
-            color: #555; border-left: 3px solid #8B4513; 
-        }
-        .btn-edit { 
-            position: absolute; top: 15px; right: 15px; font-size: 20px; 
-            cursor: pointer; background: none; border: none; 
-        }
-
-        /* --- 인트로 화면 (스플래시) --- */
+        /* --- 인트로 화면 (커스텀 이미지 적용) --- */
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #FFF8E1; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1s ease-out;
         }
-        .earth { font-size: 80px; animation: spin 4s linear infinite; }
-        .squirrel-intro { font-size: 60px; position: absolute; margin-top: -50px; animation: walk 1s ease-in-out infinite alternate; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes walk { from { transform: translateY(0); } to { transform: translateY(-10px); } }
-        .intro-text { margin-top: 40px; font-size: 24px; font-weight: bold; color: #8B4513; }
 
-        /* --- 수정 모달창 --- */
-        #edit-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center;
+        .intro-container {
+            position: relative;
+            width: 200px;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
         }
-        .modal-content {
-            background: white; padding: 25px; border-radius: 15px; width: 80%;
+
+        /* 1. 지구본 (Image 3) - 빙글빙글 회전 */
+        .intro-globe { 
+            width: 100px; 
+            height: 100px;
+            z-index: 1; 
+            animation: spin 4s linear infinite; 
+            mix-blend-mode: multiply; /* 흰색 배경 투명하게 */
         }
-        .modal-content h3 { margin-top: 0; color: #8B4513; }
+
+        /* 2. 다람쥐 (Image 2) - 위에서 걷는 모션 */
+        .intro-squirrel { 
+            position: absolute;
+            bottom: 85px; /* 지구본 위에 딱 맞게 조정 */
+            width: 130px; /* 다람쥐 크기 */
+            z-index: 2; 
+            animation: walk 0.6s ease-in-out infinite alternate;
+            mix-blend-mode: multiply; /* 흰색 배경 투명하게 */
+        }
+        
+        /* 애니메이션 정의 */
+        @keyframes spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(-360deg); } 
+        }
+        @keyframes walk { 
+            from { transform: translateY(0) rotate(-3deg); } 
+            to { transform: translateY(-10px) rotate(3deg); } 
+        }
+
+        .intro-text { 
+            margin-top: 30px; font-size: 22px; font-weight: bold; color: #8B4513; 
+            text-align: center; line-height: 1.5;
+        }
+
+        /* --- 기존 UI 유지 --- */
+        .tab-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 10; }
+        .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: #888; cursor: pointer; }
+        .tab-item.active { color: #8B4513; font-weight: bold; }
+        .tab-icon { display: block; font-size: 20px; margin-bottom: 2px; }
+
+        #map-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; }
+        #list-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; background: #fdfdfd; display: none; overflow-y: auto; padding-bottom: 20px; }
+
+        #conquer-btn {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 5; background-color: #8B4513; color: white;
+            border: 3px solid #D2691E; padding: 15px 30px; font-size: 18px;
+            border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap;
+        }
+        #conquer-btn:active { transform: translateX(-50%) scale(0.95); background-color: #5D2906; }
+
+        .stats-box { background: #8B4513; color: white; padding: 20px; text-align: center; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
+        .stats-count { font-size: 28px; font-weight: bold; }
+        .log-item { background: white; margin: 15px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .log-place { font-weight: bold; font-size: 18px; color: #333; }
+        .log-note { background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; color: #555; border-left: 3px solid #8B4513; }
+        .btn-edit { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; background: none; border: none; }
+
+        /* 수정 모달 */
+        #edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 80%; }
         .modal-input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
         .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
         .modal-btn { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
         .btn-save { background: #8B4513; color: white; }
-        .btn-cancel { background: #ddd; }
     </style>
 </head>
 <body>
 
-    <!-- 1. 인트로 화면 -->
+    <!-- 1. 인트로 화면 (업데이트됨) -->
     <div id="intro-screen">
-        <div style="position: relative; display: flex; justify-content: center;">
-            <div class="earth">🌍</div>
-            <div class="squirrel-intro">🐿️</div>
+        <div class="intro-container">
+            <!-- 걷는 다람쥐 (Image 2) -->
+            <img src="./squirrel.png" class="intro-squirrel" onerror="this.style.display='none'">
+            <!-- 회전하는 지구본 (Image 3) -->
+            <img src="./globe.png" class="intro-globe" onerror="this.style.display='none'">
+            
+            <!-- 이미지가 없을 경우를 대비한 이모지 백업 (이미지 있으면 안보임) -->
+            <div id="backup-emoji" style="position:absolute; display:none; font-size:80px;">🐿️🌍</div>
         </div>
-        <div class="intro-text">세계 정복하러 가는 중...</div>
+        <div class="intro-text">
+            지구 정복하러<br>출동한다람쥐! 🐿️💨
+        </div>
     </div>
 
     <!-- 2. 메인 지도 탭 -->
@@ -108,13 +123,11 @@
     <!-- 3. 정복 리스트 탭 -->
     <div id="list-container">
         <div class="stats-box">
-            <div class="stats-title">현재 다람쥐의 정복 현황</div>
+            <div style="font-size: 14px; opacity: 0.9;">현재 다람쥐의 정복 현황</div>
             <div class="stats-count" id="total-count">0곳 정복함</div>
             <div style="margin-top: 10px; font-size: 14px;" id="country-stats"></div>
         </div>
-        <div id="log-list-area">
-            <!-- 기록들이 여기에 추가됨 -->
-        </div>
+        <div id="log-list-area"></div>
     </div>
 
     <!-- 4. 하단 탭바 -->
@@ -130,19 +143,19 @@
     <!-- 5. 수정 모달 -->
     <div id="edit-modal">
         <div class="modal-content">
-            <h3>정복 기록 수정 🐿️</h3>
-            <input type="text" id="edit-place" class="modal-input" placeholder="장소 이름 (예: 우리집 화장실)">
-            <textarea id="edit-note" class="modal-input" rows="3" placeholder="메모 (예: 휴지가 뽀송했음)"></textarea>
+            <h3 style="margin-top:0; color:#8B4513;">정복 기록 수정 🐿️</h3>
+            <input type="text" id="edit-place" class="modal-input" placeholder="장소 이름">
+            <textarea id="edit-note" class="modal-input" rows="3" placeholder="메모"></textarea>
             <input type="hidden" id="edit-id">
             <div class="modal-btns">
-                <button class="modal-btn btn-cancel" onclick="closeModal()">취소</button>
+                <button class="modal-btn" onclick="closeModal()" style="background:#ddd;">취소</button>
                 <button class="modal-btn btn-save" onclick="saveEdit()">저장</button>
             </div>
-            <button onclick="deleteLog()" style="margin-top:10px; width:100%; background:none; border:none; color:red;">삭제하기</button>
+            <button onclick="deleteLog()" style="margin-top:10px; width:100%; background:none; border:none; color:red; cursor:pointer;">삭제하기</button>
         </div>
     </div>
 
-    <!-- 구글 맵 API (Geocoding 라이브러리 추가됨) -->
+    <!-- 구글 맵 API -->
     <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5LgbtPjepR9nuQ4TUjyRknmC9JgKodWo&libraries=places&callback=initMap">
     </script>
@@ -152,15 +165,20 @@
         let markers = [];
         let geocoder;
 
-        // --- 초기화 및 인트로 ---
         function initMap() {
-            // 인트로 2.5초 후 사라짐
+            // 이미지 로드 실패 시 이모지 보여주기 체크
+            const imgCheck = document.querySelector('.intro-squirrel');
+            if(imgCheck.naturalWidth === 0) {
+                document.getElementById('backup-emoji').style.display = 'block';
+            }
+
+            // 인트로 3초 후 사라짐
             setTimeout(() => {
                 document.getElementById('intro-screen').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('intro-screen').style.display = 'none';
                 }, 1000);
-            }, 2500);
+            }, 3000);
 
             geocoder = new google.maps.Geocoder();
 
@@ -169,12 +187,11 @@
                 zoom: 16,
                 center: startPos,
                 disableDefaultUI: false,
-                clickableIcons: false // 지도 위 상점 클릭 방지
+                clickableIcons: false
             });
 
-            loadConquests(); // 저장된 데이터 불러오기
+            loadConquests();
 
-            // 현재 위치로 이동
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const pos = {
@@ -182,7 +199,7 @@
                         lng: position.coords.longitude,
                     };
                     map.setCenter(pos);
-                    // 탐험가 다람쥐 마커 (내 위치)
+                    // 내 위치 마커 (다람쥐 이모지)
                     new google.maps.Marker({
                         position: pos,
                         map: map,
@@ -193,7 +210,6 @@
             }
         }
 
-        // --- 정복 기능 (위치 저장) ---
         function conquerCurrentLocation() {
             if (!navigator.geolocation) {
                 alert("위치 정보를 사용할 수 없습니다.");
@@ -205,14 +221,12 @@
                 const lng = position.coords.longitude;
                 const latlng = { lat: lat, lng: lng };
 
-                // 주소 가져오기 (Geocoding)
                 geocoder.geocode({ location: latlng }, (results, status) => {
                     let country = "미지의 땅";
                     let region = "어딘가";
                     let flag = "🏳️";
 
                     if (status === "OK" && results[0]) {
-                        // 주소 분석
                         const addressComponents = results[0].address_components;
                         addressComponents.forEach(component => {
                             if (component.types.includes("country")) {
@@ -223,104 +237,77 @@
                                 else flag = "🚩";
                             }
                             if (component.types.includes("administrative_area_level_1")) {
-                                region = component.long_name; // 시/도
+                                region = component.long_name;
                             }
                         });
                     }
 
                     const newConquest = {
-                        id: Date.now(), // 고유 ID
+                        id: Date.now(),
                         lat: lat,
                         lng: lng,
                         time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
                         country: country,
                         region: region,
                         flag: flag,
-                        placeName: `${region}의 어느 화장실`,
-                        note: "아직 메모가 없습니다."
+                        placeName: `${region}의 정복지`,
+                        note: "영역 표시 완료! 쾌적했음."
                     };
 
-                    // 저장
                     let list = getList();
                     list.push(newConquest);
                     saveList(list);
-                    
                     addMarker(newConquest);
-                    alert("정복 완료! 🐿️\n리스트 탭에서 내용을 수정할 수 있어요.");
+                    
+                    if(navigator.vibrate) navigator.vibrate(200);
+                    alert("정복 완료! 🐿️\n지구 정복에 한 발짝 다가갔습니다.");
                 });
             });
         }
 
-        // --- 마커 표시 ---
         function addMarker(data) {
             const marker = new google.maps.Marker({
                 position: { lat: data.lat, lng: data.lng },
                 map: map,
-                label: { text: "💩", fontSize: "20px" } // 똥 마커
+                label: { text: "💩", fontSize: "20px" }
             });
-            
             const infoWindow = new google.maps.InfoWindow({
                 content: `<div style="text-align:center;"><b>${data.placeName}</b><br>${data.time}</div>`
             });
-
-            marker.addListener("click", () => {
-                infoWindow.open(map, marker);
-            });
+            marker.addListener("click", () => infoWindow.open(map, marker));
         }
 
-        // --- 데이터 관리 (LocalStorage) ---
-        function getList() {
-            return JSON.parse(localStorage.getItem('conquestList')) || [];
-        }
-        function saveList(list) {
-            localStorage.setItem('conquestList', JSON.stringify(list));
-            renderList(); // 리스트 화면 갱신
-        }
+        function getList() { return JSON.parse(localStorage.getItem('conquestList')) || []; }
+        function saveList(list) { localStorage.setItem('conquestList', JSON.stringify(list)); renderList(); }
+        function loadConquests() { getList().forEach(item => addMarker(item)); renderList(); }
 
-        function loadConquests() {
-            const list = getList();
-            list.forEach(item => addMarker(item));
-            renderList();
-        }
-
-        // --- 리스트 화면 렌더링 & 통계 ---
         function renderList() {
-            const list = getList().reverse(); // 최신순 정렬
+            const list = getList().reverse();
             const container = document.getElementById('log-list-area');
             container.innerHTML = "";
 
-            // 통계 계산
             document.getElementById('total-count').innerText = `${list.length}곳 정복함`;
             const countryCounts = {};
-            list.forEach(item => {
-                countryCounts[item.country] = (countryCounts[item.country] || 0) + 1;
-            });
+            list.forEach(item => { countryCounts[item.country] = (countryCounts[item.country] || 0) + 1; });
             let statsText = [];
-            for (const [country, count] of Object.entries(countryCounts)) {
-                statsText.push(`${country}: ${count}`);
-            }
-            document.getElementById('country-stats').innerText = statsText.join(' | ');
+            for (const [country, count] of Object.entries(countryCounts)) { statsText.push(`${country} ${count}`); }
+            document.getElementById('country-stats').innerText = statsText.join('  |  ');
 
-            // 리스트 생성
             list.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'log-item';
                 div.innerHTML = `
                     <div class="log-header">
-                        <div>
-                            <span class="log-flag">${item.flag}</span>
-                            <span class="log-place">${item.placeName}</span>
-                        </div>
+                        <div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div>
                         <button class="btn-edit" onclick="openEditModal(${item.id})">✎</button>
                     </div>
-                    <div class="log-addr">${item.country} ${item.region} | ${item.time}</div>
+                    <div style="font-size:12px; color:#777; margin-bottom:8px;">${item.country} ${item.region} | ${item.time}</div>
                     <div class="log-note">${item.note}</div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        // --- 수정 모달 관련 ---
         function openEditModal(id) {
             const list = getList();
             const item = list.find(x => x.id === id);
@@ -331,38 +318,31 @@
                 document.getElementById('edit-modal').style.display = 'flex';
             }
         }
-
-        function closeModal() {
-            document.getElementById('edit-modal').style.display = 'none';
-        }
-
+        function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+        
         function saveEdit() {
             const id = parseInt(document.getElementById('edit-id').value);
-            const newName = document.getElementById('edit-place').value;
-            const newNote = document.getElementById('edit-note').value;
-
             let list = getList();
             const index = list.findIndex(x => x.id === id);
             if(index !== -1) {
-                list[index].placeName = newName;
-                list[index].note = newNote;
+                list[index].placeName = document.getElementById('edit-place').value;
+                list[index].note = document.getElementById('edit-note').value;
                 saveList(list);
                 closeModal();
             }
         }
 
         function deleteLog() {
-            if(confirm("이 정복 기록을 삭제할까요?")) {
+            if(confirm("정복 기록을 지우시겠습니까?")) {
                 const id = parseInt(document.getElementById('edit-id').value);
                 let list = getList();
                 list = list.filter(x => x.id !== id);
                 saveList(list);
                 closeModal();
-                location.reload(); // 마커 삭제를 위해 새로고침이 제일 깔끔함
+                location.reload();
             }
         }
 
-        // --- 탭 전환 ---
         function switchTab(tabName) {
             if (tabName === 'map') {
                 document.getElementById('map-container').style.display = 'block';
@@ -374,7 +354,7 @@
                 document.getElementById('list-container').style.display = 'block';
                 document.getElementById('tab-map').classList.remove('active');
                 document.getElementById('tab-list').classList.add('active');
-                renderList(); // 리스트 탭 누를 때마다 갱신
+                renderList();
             }
         }
     </script>
