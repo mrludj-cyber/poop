@@ -3,163 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>나만의 배변 지도 💩</title>
+    <title>다람쥐의 배변 정복기 🐿️</title>
     <style>
-        body, html { height: 100%; margin: 0; padding: 0; font-family: sans-serif; }
-        #map { height: 100%; width: 100%; }
+        /* --- 기본 스타일 --- */
+        body, html { height: 100%; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; background-color: #f5f5f5; }
         
-        .btn-container {
-            position: absolute;
-            bottom: 40px;
-            width: 100%;
-            text-align: center;
-            z-index: 5;
+        /* --- 탭 메뉴 (하단) --- */
+        .tab-bar {
+            position: fixed; bottom: 0; width: 100%; height: 60px;
+            background: white; display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid #ddd; z-index: 10;
+        }
+        .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: #888; cursor: pointer; }
+        .tab-item.active { color: #8B4513; font-weight: bold; }
+        .tab-icon { display: block; font-size: 20px; margin-bottom: 2px; }
+
+        /* --- 메인 화면 컨테이너 --- */
+        #map-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; }
+        #list-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; background: #fdfdfd; display: none; overflow-y: auto; padding-bottom: 20px; }
+
+        /* --- 정복 완료 버튼 --- */
+        #conquer-btn {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 5; background-color: #8B4513; color: white;
+            border: 3px solid #D2691E; padding: 15px 40px; font-size: 20px;
+            border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px;
+        }
+        #conquer-btn:active { transform: translateX(-50%) scale(0.95); background-color: #5D2906; }
+
+        /* --- 정복 리스트 스타일 --- */
+        .stats-box {
+            background: #8B4513; color: white; padding: 20px; text-align: center;
+            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+        }
+        .stats-title { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
+        .stats-count { font-size: 28px; font-weight: bold; }
+        
+        .log-item {
+            background: white; margin: 15px; padding: 15px; border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;
+        }
+        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .log-flag { font-size: 24px; margin-right: 10px; }
+        .log-place { font-weight: bold; font-size: 18px; color: #333; }
+        .log-addr { font-size: 12px; color: #777; margin-bottom: 10px; }
+        .log-note { 
+            background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; 
+            color: #555; border-left: 3px solid #8B4513; 
+        }
+        .btn-edit { 
+            position: absolute; top: 15px; right: 15px; font-size: 20px; 
+            cursor: pointer; background: none; border: none; 
         }
 
-        #poop-btn {
-            background-color: #8B4513;
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            font-size: 22px;
-            border-radius: 50px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s;
+        /* --- 인트로 화면 (스플래시) --- */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #FFF8E1; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1s ease-out;
         }
-        #poop-btn:active { transform: scale(0.95); background-color: #5D2906; }
-        
-        /* 기록 삭제 버튼 (작게) */
-        #reset-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 5;
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid #ccc;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
+        .earth { font-size: 80px; animation: spin 4s linear infinite; }
+        .squirrel-intro { font-size: 60px; position: absolute; margin-top: -50px; animation: walk 1s ease-in-out infinite alternate; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes walk { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+        .intro-text { margin-top: 40px; font-size: 24px; font-weight: bold; color: #8B4513; }
+
+        /* --- 수정 모달창 --- */
+        #edit-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center;
         }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 15px; width: 80%;
+        }
+        .modal-content h3 { margin-top: 0; color: #8B4513; }
+        .modal-input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-btn { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
+        .btn-save { background: #8B4513; color: white; }
+        .btn-cancel { background: #ddd; }
     </style>
 </head>
 <body>
 
-    <button id="reset-btn" onclick="resetData()">🗑️ 기록 초기화</button>
-    <div id="map"></div>
-    
-    <div class="btn-container">
-        <button id="poop-btn" onclick="savePoop()">💩 여기서 쌈!</button>
+    <!-- 1. 인트로 화면 -->
+    <div id="intro-screen">
+        <div style="position: relative; display: flex; justify-content: center;">
+            <div class="earth">🌍</div>
+            <div class="squirrel-intro">🐿️</div>
+        </div>
+        <div class="intro-text">세계 정복하러 가는 중...</div>
     </div>
 
-    <!-- 구글 맵 API -->
+    <!-- 2. 메인 지도 탭 -->
+    <div id="map-container">
+        <div id="map" style="width: 100%; height: 100%;"></div>
+        <button id="conquer-btn" onclick="conquerCurrentLocation()">
+            <span>🚩</span> 정복 완료!
+        </button>
+    </div>
+
+    <!-- 3. 정복 리스트 탭 -->
+    <div id="list-container">
+        <div class="stats-box">
+            <div class="stats-title">현재 다람쥐의 정복 현황</div>
+            <div class="stats-count" id="total-count">0곳 정복함</div>
+            <div style="margin-top: 10px; font-size: 14px;" id="country-stats"></div>
+        </div>
+        <div id="log-list-area">
+            <!-- 기록들이 여기에 추가됨 -->
+        </div>
+    </div>
+
+    <!-- 4. 하단 탭바 -->
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="switchTab('map')" id="tab-map">
+            <span class="tab-icon">🗺️</span>지도
+        </div>
+        <div class="tab-item" onclick="switchTab('list')" id="tab-list">
+            <span class="tab-icon">📜</span>정복 리스트
+        </div>
+    </div>
+
+    <!-- 5. 수정 모달 -->
+    <div id="edit-modal">
+        <div class="modal-content">
+            <h3>정복 기록 수정 🐿️</h3>
+            <input type="text" id="edit-place" class="modal-input" placeholder="장소 이름 (예: 우리집 화장실)">
+            <textarea id="edit-note" class="modal-input" rows="3" placeholder="메모 (예: 휴지가 뽀송했음)"></textarea>
+            <input type="hidden" id="edit-id">
+            <div class="modal-btns">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">취소</button>
+                <button class="modal-btn btn-save" onclick="saveEdit()">저장</button>
+            </div>
+            <button onclick="deleteLog()" style="margin-top:10px; width:100%; background:none; border:none; color:red;">삭제하기</button>
+        </div>
+    </div>
+
+    <!-- 구글 맵 API (Geocoding 라이브러리 추가됨) -->
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5LgbtPjepR9nuQ4TUjyRknmC9JgKodWo&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5LgbtPjepR9nuQ4TUjyRknmC9JgKodWo&libraries=places&callback=initMap">
     </script>
 
     <script>
         let map;
         let markers = [];
+        let geocoder;
 
-        // 1. 지도 초기화
+        // --- 초기화 및 인트로 ---
         function initMap() {
-            // 서울 시청 기본 좌표
+            // 인트로 2.5초 후 사라짐
+            setTimeout(() => {
+                document.getElementById('intro-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('intro-screen').style.display = 'none';
+                }, 1000);
+            }, 2500);
+
+            geocoder = new google.maps.Geocoder();
+
             const startPos = { lat: 37.5665, lng: 126.9780 };
-            
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 16,
                 center: startPos,
                 disableDefaultUI: false,
-                gestureHandling: 'greedy' // 모바일 터치감 개선
+                clickableIcons: false // 지도 위 상점 클릭 방지
             });
 
-            // 저장된 데이터 불러오기
-            loadPoops();
+            loadConquests(); // 저장된 데이터 불러오기
 
-            // 현재 내 위치로 이동
+            // 현재 위치로 이동
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const pos = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                        };
-                        map.setCenter(pos);
-                        // 내 위치 파란 점
-                        new google.maps.Marker({
-                            position: pos,
-                            map: map,
-                            icon: {
-                                path: google.maps.SymbolPath.CIRCLE,
-                                scale: 7,
-                                fillColor: "#4285F4",
-                                fillOpacity: 1,
-                                strokeColor: "white",
-                                strokeWeight: 2,
-                            },
-                        });
-                    },
-                    () => { console.log("위치 권한 실패"); }
-                );
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    map.setCenter(pos);
+                    // 탐험가 다람쥐 마커 (내 위치)
+                    new google.maps.Marker({
+                        position: pos,
+                        map: map,
+                        label: { text: "🐿️", fontSize: "30px" },
+                        zIndex: 999
+                    });
+                });
             }
         }
 
-        // 2. 똥 기록 저장 (LocalStorage 사용)
-        function savePoop() {
+        // --- 정복 기능 (위치 저장) ---
+        function conquerCurrentLocation() {
             if (!navigator.geolocation) {
-                alert("브라우저가 위치 정보를 지원하지 않습니다.");
+                alert("위치 정보를 사용할 수 없습니다.");
                 return;
             }
 
             navigator.geolocation.getCurrentPosition((position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                const time = new Date().toLocaleString();
+                const latlng = { lat: lat, lng: lng };
 
-                const poopData = { lat: lat, lng: lng, time: time };
+                // 주소 가져오기 (Geocoding)
+                geocoder.geocode({ location: latlng }, (results, status) => {
+                    let country = "미지의 땅";
+                    let region = "어딘가";
+                    let flag = "🏳️";
 
-                // 기존 데이터 가져오기
-                let poopList = JSON.parse(localStorage.getItem('myPoopList')) || [];
-                
-                // 새 데이터 추가
-                poopList.push(poopData);
-                
-                // 다시 저장
-                localStorage.setItem('myPoopList', JSON.stringify(poopList));
+                    if (status === "OK" && results[0]) {
+                        // 주소 분석
+                        const addressComponents = results[0].address_components;
+                        addressComponents.forEach(component => {
+                            if (component.types.includes("country")) {
+                                country = component.long_name;
+                                if(country === "대한민국") flag = "🇰🇷";
+                                else if(country === "미국") flag = "🇺🇸";
+                                else if(country === "일본") flag = "🇯🇵";
+                                else flag = "🚩";
+                            }
+                            if (component.types.includes("administrative_area_level_1")) {
+                                region = component.long_name; // 시/도
+                            }
+                        });
+                    }
 
-                // 지도에 마커 찍기
-                addMarker(lat, lng, time);
-                
-                alert("성공적으로 영역을 표시했습니다! 💩");
+                    const newConquest = {
+                        id: Date.now(), // 고유 ID
+                        lat: lat,
+                        lng: lng,
+                        time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
+                        country: country,
+                        region: region,
+                        flag: flag,
+                        placeName: `${region}의 어느 화장실`,
+                        note: "아직 메모가 없습니다."
+                    };
+
+                    // 저장
+                    let list = getList();
+                    list.push(newConquest);
+                    saveList(list);
+                    
+                    addMarker(newConquest);
+                    alert("정복 완료! 🐿️\n리스트 탭에서 내용을 수정할 수 있어요.");
+                });
             });
         }
 
-        // 3. 저장된 똥 기록 불러오기
-        function loadPoops() {
-            let poopList = JSON.parse(localStorage.getItem('myPoopList')) || [];
-            poopList.forEach(data => {
-                addMarker(data.lat, data.lng, data.time);
-            });
-        }
-
-        // 4. 지도에 마커 추가하는 함수
-        function addMarker(lat, lng, title) {
-            new google.maps.Marker({
-                position: { lat: lat, lng: lng },
+        // --- 마커 표시 ---
+        function addMarker(data) {
+            const marker = new google.maps.Marker({
+                position: { lat: data.lat, lng: data.lng },
                 map: map,
-                title: title,
-                // 기본 빨간 핀 (원하면 💩 이미지 url로 변경 가능)
-                animation: google.maps.Animation.DROP 
+                label: { text: "💩", fontSize: "20px" } // 똥 마커
+            });
+            
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<div style="text-align:center;"><b>${data.placeName}</b><br>${data.time}</div>`
+            });
+
+            marker.addListener("click", () => {
+                infoWindow.open(map, marker);
             });
         }
 
-        // 5. 기록 초기화
-        function resetData() {
-            if(confirm("정말 모든 배변 기록을 삭제하시겠습니까?")) {
-                localStorage.removeItem('myPoopList');
-                location.reload(); // 새로고침
+        // --- 데이터 관리 (LocalStorage) ---
+        function getList() {
+            return JSON.parse(localStorage.getItem('conquestList')) || [];
+        }
+        function saveList(list) {
+            localStorage.setItem('conquestList', JSON.stringify(list));
+            renderList(); // 리스트 화면 갱신
+        }
+
+        function loadConquests() {
+            const list = getList();
+            list.forEach(item => addMarker(item));
+            renderList();
+        }
+
+        // --- 리스트 화면 렌더링 & 통계 ---
+        function renderList() {
+            const list = getList().reverse(); // 최신순 정렬
+            const container = document.getElementById('log-list-area');
+            container.innerHTML = "";
+
+            // 통계 계산
+            document.getElementById('total-count').innerText = `${list.length}곳 정복함`;
+            const countryCounts = {};
+            list.forEach(item => {
+                countryCounts[item.country] = (countryCounts[item.country] || 0) + 1;
+            });
+            let statsText = [];
+            for (const [country, count] of Object.entries(countryCounts)) {
+                statsText.push(`${country}: ${count}`);
+            }
+            document.getElementById('country-stats').innerText = statsText.join(' | ');
+
+            // 리스트 생성
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'log-item';
+                div.innerHTML = `
+                    <div class="log-header">
+                        <div>
+                            <span class="log-flag">${item.flag}</span>
+                            <span class="log-place">${item.placeName}</span>
+                        </div>
+                        <button class="btn-edit" onclick="openEditModal(${item.id})">✎</button>
+                    </div>
+                    <div class="log-addr">${item.country} ${item.region} | ${item.time}</div>
+                    <div class="log-note">${item.note}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- 수정 모달 관련 ---
+        function openEditModal(id) {
+            const list = getList();
+            const item = list.find(x => x.id === id);
+            if(item) {
+                document.getElementById('edit-id').value = id;
+                document.getElementById('edit-place').value = item.placeName;
+                document.getElementById('edit-note').value = item.note;
+                document.getElementById('edit-modal').style.display = 'flex';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        function saveEdit() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            const newName = document.getElementById('edit-place').value;
+            const newNote = document.getElementById('edit-note').value;
+
+            let list = getList();
+            const index = list.findIndex(x => x.id === id);
+            if(index !== -1) {
+                list[index].placeName = newName;
+                list[index].note = newNote;
+                saveList(list);
+                closeModal();
+            }
+        }
+
+        function deleteLog() {
+            if(confirm("이 정복 기록을 삭제할까요?")) {
+                const id = parseInt(document.getElementById('edit-id').value);
+                let list = getList();
+                list = list.filter(x => x.id !== id);
+                saveList(list);
+                closeModal();
+                location.reload(); // 마커 삭제를 위해 새로고침이 제일 깔끔함
+            }
+        }
+
+        // --- 탭 전환 ---
+        function switchTab(tabName) {
+            if (tabName === 'map') {
+                document.getElementById('map-container').style.display = 'block';
+                document.getElementById('list-container').style.display = 'none';
+                document.getElementById('tab-map').classList.add('active');
+                document.getElementById('tab-list').classList.remove('active');
+            } else {
+                document.getElementById('map-container').style.display = 'none';
+                document.getElementById('list-container').style.display = 'block';
+                document.getElementById('tab-map').classList.remove('active');
+                document.getElementById('tab-list').classList.add('active');
+                renderList(); // 리스트 탭 누를 때마다 갱신
             }
         }
     </script>
