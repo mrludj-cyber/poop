@@ -9,18 +9,85 @@
         body, html { height: 100%; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', sans-serif; background-color: #f5f5f5; overflow: hidden; }
         
         /* --- 인트로 화면 --- */
+        /* --- 인트로 화면 --- */
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #FFF8E1; z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1s ease-out;
+            overflow: hidden;
         }
-        .intro-container { position: relative; width: 300px; height: 400px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 50px; }
-        .intro-globe { width: 140px; height: 140px; z-index: 1; animation: spin 10s linear infinite; margin-bottom: 20px; }
-        .intro-squirrel { position: absolute; bottom: 205px; width: 200px; left: 50px; right: 0; margin-left: auto; margin-right: auto; z-index: 2; animation: walk 0.6s ease-in-out infinite alternate; }
+        .intro-container { 
+            position: relative; 
+            width: 320px; 
+            height: 400px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-end; 
+            padding-bottom: 50px; 
+        }
+        
+        /* 지구본: 제자리에서 계속 돔 */
+        .intro-globe { 
+            width: 130px; height: 130px; /* 지구를 조금 더 키웠습니다 */
+            
+            z-index: 1; 
+            animation: spin 8s linear infinite; 
+            margin-bottom: 10px; 
+        }
+
+        /* 캐릭터 공통: 통통 튀는 걷기 모션 */
+        .intro-walker {
+            position: absolute;
+            bottom: 175px; /* 지구본 위에 올라가도록 위치 조정 */
+            z-index: 10;
+        }
+
+        /* [다람쥐 대장] : 화면 정중앙 고정 */
+        .intro-squirrel { 
+            width: 190px; 
+            left: 50%; 
+            /* 정중앙에서 약간 왼쪽(-70%)으로 치우치게 해서 제제 자리를 만들어줌 */
+            transform: translateX(-70%); 
+            animation: walk 0.6s ease-in-out infinite alternate;
+        }
+
+        /* [제제] : 밖에서 안으로 들어옴 */
+        .intro-jeje { 
+            width: 80px; 
+            left: 120%; /* 화면 오른쪽 바깥에서 시작 */
+            transform: translateX(-30%); /* 도착했을 때 다람쥐 뒤쪽 위치 */
+            animation: 
+                walk 0.5s ease-in-out infinite alternate, /* 걷는 동작은 계속 */
+                jeje-enter 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; /* 들어오는 동작 */
+            animation-delay: 0s, 1.0s; /* 걷기는 바로, 등장은 1초 뒤에 */
+            opacity: 0; /* 처음엔 안 보임 */
+        }
+
+        /* 지구 회전 */
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-        @keyframes walk { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-15px) rotate(5deg); } }
-        .intro-text { margin-top: 20px; font-size: 22px; font-weight: bold; color: #8B4513; text-align: center; line-height: 1.5; }
+        
+        /* 제자리 걸음 (통통 튀기) */
+        @keyframes walk { 
+            from { margin-bottom: 0px; transform: translateX(var(--tx, -50%)) rotate(-3deg); } 
+            to { margin-bottom: 10px; transform: translateX(var(--tx, -50%)) rotate(3deg); } 
+        }
+
+        /* 제제 등장 모션 (오른쪽 -> 다람쥐 뒤) */
+        @keyframes jeje-enter {
+            0% { left: 120%; opacity: 0; }
+            10% { opacity: 1; }
+            100% { left: 50%; opacity: 1; margin-left: 50px; } /* 다람쥐보다 오른쪽(+50px)에 멈춤 */
+        }
+
+        /* 다람쥐와 제제의 transform 기준점 맞추기 위한 변수 설정 */
+        .intro-squirrel { --tx: -70%; }
+        .intro-jeje { --tx: -30%; }
+
+        .intro-text { 
+            margin-top: 20px; font-size: 22px; font-weight: bold; 
+            color: #8B4513; text-align: center; line-height: 1.5; z-index: 20;
+        }
 
         /* --- UI 요소 --- */
         .tab-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; z-index: 10; }
@@ -31,7 +98,6 @@
         #map-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; }
         #list-container { height: calc(100% - 60px); width: 100%; position: absolute; top: 0; background: #fdfdfd; display: none; overflow-y: auto; padding-bottom: 20px; }
 
-        /* 메인 버튼 (정복 시작) */
         #conquer-btn {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 5; background-color: #8B4513; color: white;
@@ -41,52 +107,81 @@
         }
         #conquer-btn:active { transform: translateX(-50%) scale(0.95); background-color: #5D2906; }
 
-        /* 위치 확정 버튼 (조정 후 저장) */
-        #confirm-btn {
-            display: none; /* 초기엔 숨김 */
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            z-index: 6; background-color: #228B22; color: white;
-            border: 3px solid #006400; padding: 15px 30px; font-size: 18px;
-            border-radius: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        #confirm-group {
+            display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 6; flex-direction: row; gap: 10px;
+        }
+        .action-btn {
+            padding: 15px 25px; font-size: 18px; border-radius: 50px; 
             font-weight: bold; cursor: pointer; white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: none;
         }
+        #btn-cancel { background-color: #fff; color: #555; border: 2px solid #ccc; }
+        #btn-confirm { background-color: #228B22; color: white; border: 2px solid #006400; }
 
-        /* 안내 문구 (위치 조정 시) */
         #guide-msg {
-            display: none;
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9); padding: 10px 20px; border-radius: 20px;
-            font-weight: bold; color: #8B4513; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 5;
-            text-align: center; width: 80%;
+            display: none; position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9); padding: 8px 15px; border-radius: 20px;
+            font-size: 13px; color: #555; z-index: 5; pointer-events: none;
         }
 
-        /* --- 정복 액션 애니메이션 (CSS로 구현) --- */
+        /* [개선된 UI] 드래그 중 실시간 장소 이름 표시용 라벨 */
+        #target-label {
+            display: none;
+            position: absolute;
+            top: 30px; /* 화면 상단에 고정 */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+            color: #8B4513;
+            font-size: 16px;
+            z-index: 10000;
+            pointer-events: none;
+            white-space: nowrap;
+            border: 3px solid #8B4513;
+            transition: all 0.2s ease;
+        }
+
+        /* --- 정복 액션 애니메이션 --- */
+/* --- 정복 액션 애니메이션 (이미지 버전) --- */
         #action-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.3); z-index: 2000;
+            background: rgba(0,0,0,0.5); z-index: 2000;
             justify-content: center; align-items: center; flex-direction: column;
         }
-        .action-squirrel {
-            font-size: 80px;
-            animation: shakeButt 0.5s ease-in-out infinite;
+        
+        /* 다람쥐 이미지 스타일 */
+        .action-squirrel { 
+            width: 150px; /* 크기 조절 */
+            height: auto;
+            animation: shakeButt 0.5s ease-in-out infinite; 
         }
-        .action-acorn {
-            font-size: 40px;
-            opacity: 0;
-            margin-top: -20px;
-            animation: dropAcorn 1s ease-out forwards;
-            animation-delay: 1s; /* 다람쥐 흔들고 1초 뒤에 떨어짐 */
+        
+        /* 도토리 이미지 스타일 */
+        .action-acorn { 
+            width: 80px; /* 크기 조절 */
+            height: auto;
+            opacity: 0; 
+            margin-top: -50px; /* 다람쥐 엉덩이 근처에서 시작 */
+            animation: dropAcorn 1s ease-out forwards; 
+            animation-delay: 1s; 
+            position: absolute; /* 겹치기 위해 절대 위치 */
         }
+
         @keyframes shakeButt {
-            0% { transform: rotate(0deg) translateY(0); }
+            0% { transform: rotate(0deg) translateY(0); } 
             25% { transform: rotate(-10deg) translateY(5px); }
-            75% { transform: rotate(10deg) translateY(5px); }
+            75% { transform: rotate(10deg) translateY(5px); } 
             100% { transform: rotate(0deg) translateY(0); }
         }
         @keyframes dropAcorn {
-            0% { transform: translateY(-20px) scale(0.5); opacity: 0; }
+            0% { transform: translateY(0) scale(0.5); opacity: 0; } 
             50% { opacity: 1; }
-            100% { transform: translateY(100px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(120px) scale(1.0); opacity: 1; } /* 아래로 툭 떨어짐 */
         }
 
         /* 리스트 스타일 */
@@ -94,7 +189,7 @@
         .stats-count { font-size: 28px; font-weight: bold; }
         .log-item { background: white; margin: 15px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
         .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .log-place { font-weight: bold; font-size: 18px; color: #333; }
+        .log-place { font-weight: bold; font-size: 16px; color: #333; line-height: 1.3; }
         .log-note { background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 14px; color: #555; border-left: 3px solid #8B4513; }
         .btn-edit { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; background: none; border: none; }
 
@@ -105,44 +200,67 @@
         .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
         .modal-btn { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
         .btn-save { background: #8B4513; color: white; }
+
+        .infowindow-content button {
+            background: #d32f2f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 12px;
+        }
+        /* --- 기존 style 태그 안에 추가 --- */
+
+        /* 국가별 헤더 스타일 */
+        .country-header {
+            background-color: #eee;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: #555;
+            font-size: 16px;
+            border-left: 5px solid #8B4513; /* 다람쥐색 포인트 */
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        /* 첫 번째 헤더는 위쪽 여백 없애기 */
+        .country-header:first-child { margin-top: 0; }
     </style>
 </head>
 <body>
-
-    <!-- 인트로 -->
     <div id="intro-screen">
         <div class="intro-container">
-            <img src="./squirrel.png" class="intro-squirrel" alt="다람쥐">
+            <!-- 1. 다람쥐 대장 (제자리 걷기) -->
+            <img src="./squirrel.png" class="intro-walker intro-squirrel" alt="다람쥐">
+            
+            <!-- 2. 따라오는 제제 (1초 뒤 등장) -->
+            <img src="./jeje.png" class="intro-walker intro-jeje" alt="제제">
+            
+            <!-- 3. 회전하는 지구 -->
             <img src="./globe.png" class="intro-globe" alt="지구본">
         </div>
-        <div class="intro-text">
-            지구 정복하러<br>출동한다람쥐! 🐿️💨
+        <div class="intro-text">지구 정복하러 출동!<br>빨리와 제제! 🐿️💨🐕</div>
+    </div>
+
+    <div id="action-overlay">
+        <!-- 움직이는 다람쥐 -->
+        <img src="./squirrel.png" class="action-squirrel" alt="다람쥐">
+        <!-- 떨어지는 도토리 -->
+        <img src="./acorn.png" class="action-acorn" alt="도토리">
+        
+        <div style="color:white; font-weight:bold; margin-top:140px; font-size:22px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+            영역 표시 중... 💩
         </div>
     </div>
 
-    <!-- 정복 액션 애니메이션 오버레이 -->
-    <div id="action-overlay">
-        <div class="action-squirrel">🐿️</div>
-        <div class="action-acorn">🌰</div>
-        <div style="color:white; font-weight:bold; margin-top:20px; font-size:20px;">영역 표시 중...</div>
-    </div>
-
-    <!-- 지도 탭 -->
     <div id="map-container">
         <div id="map" style="width: 100%; height: 100%;"></div>
         
+        <!-- [개선] 상단 플로팅 라벨 (빠른 반응속도) -->
+        <div id="target-label">장소 탐색 중... 👀</div>
+
         <div id="guide-msg">원 안에서 마커를 드래그해<br>정확한 위치를 찍어주세요!</div>
-        
-        <button id="conquer-btn" onclick="startConquestMode()">
-            <span>🚩</span> 정복하기
-        </button>
-        
-        <button id="confirm-btn" onclick="confirmLocationAndSave()">
-             🙆‍♂️ 여기로 확정!
-        </button>
+        <button id="conquer-btn" onclick="startConquestMode()"><span>🚩</span> 정복하기</button>
+        <div id="confirm-group">
+            <button id="btn-cancel" class="action-btn" onclick="cancelConquestMode()">✖ 취소</button>
+            <button id="btn-confirm" class="action-btn" onclick="confirmLocationAndSave()">🙆‍♂️ 확정!</button>
+        </div>
     </div>
 
-    <!-- 리스트 탭 -->
     <div id="list-container">
         <div class="stats-box">
             <div style="font-size: 14px; opacity: 0.9;">현재 다람쥐의 정복 현황</div>
@@ -152,17 +270,11 @@
         <div id="log-list-area"></div>
     </div>
 
-    <!-- 하단 탭바 -->
     <div class="tab-bar">
-        <div class="tab-item active" onclick="switchTab('map')" id="tab-map">
-            <span class="tab-icon">🗺️</span>지도
-        </div>
-        <div class="tab-item" onclick="switchTab('list')" id="tab-list">
-            <span class="tab-icon">📜</span>정복 리스트
-        </div>
+        <div class="tab-item active" onclick="switchTab('map')" id="tab-map"><span class="tab-icon">🗺️</span>지도</div>
+        <div class="tab-item" onclick="switchTab('list')" id="tab-list"><span class="tab-icon">📜</span>정복 리스트</div>
     </div>
 
-    <!-- 수정 모달 -->
     <div id="edit-modal">
         <div class="modal-content">
             <h3 style="margin-top:0; color:#8B4513;">정복 기록 수정 🐿️</h3>
@@ -173,19 +285,28 @@
                 <button class="modal-btn" onclick="closeModal()" style="background:#ddd;">취소</button>
                 <button class="modal-btn btn-save" onclick="saveEdit()">저장</button>
             </div>
-            <button onclick="deleteLog()" style="margin-top:10px; width:100%; background:none; border:none; color:red; cursor:pointer;">삭제하기</button>
+            <button onclick="deleteLogFromModal()" style="margin-top:10px; width:100%; background:none; border:none; color:red; cursor:pointer; font-weight:bold;">🗑 삭제하기</button>
         </div>
     </div>
 
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5LgbtPjepR9nuQ4TUjyRknmC9JgKodWo&libraries=places&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5LgbtPjepR9nuQ4TUjyRknmC9JgKodWo&libraries=places,geometry&callback=initMap">
     </script>
 
     <script>
         let map;
         let geocoder;
-        let activeSelectionMarker = null; // 위치 조정용 마커
-        let activeCircle = null;          // 100m 반경 원
+        let placesService;
+        let activeSelectionMarker = null;
+        let activeCircle = null;
+        let allMarkers = {};
+        
+        // 주변 건물 타겟(파란점) 관리 배열
+        let targetSpots = [];
+        let selectedSpotData = null; 
+
+        // [추가] 라벨 요소 참조
+        const targetLabel = document.getElementById('target-label');
 
         function initMap() {
             setTimeout(() => {
@@ -194,38 +315,49 @@
             }, 3000);
 
             geocoder = new google.maps.Geocoder();
-            // 기본 서울 좌표
             const startPos = { lat: 37.5665, lng: 126.9780 };
             
-            // 1. [요청반영] zoom을 17로 설정하여 초기부터 상세하게(동/건물 단위) 보이게 함
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 17, 
                 center: startPos, 
+                
+                // UI 컨트롤 설정
                 disableDefaultUI: false, 
-                clickableIcons: false,
-                streetViewControl: false, // 모바일에서 깔끔하게 보이기 위해
+                clickableIcons: false,  // 지도 상점 아이콘 클릭 방지 (다람쥐 마커 클릭 방해 안 받게)
+                streetViewControl: false, 
                 mapTypeControl: false
+                
+                // styles 옵션을 아예 뺐습니다. -> 기본 구글 지도로 표시됨
             });
 
-            loadConquests(); // 저장된 도토리들 불러오기
+            try {
+                placesService = new google.maps.places.PlacesService(map);
+            } catch (e) {
+                console.warn("Places 라이브러리 로드 실패");
+            }
 
-            // 현재 위치로 지도 이동
+            loadConquests(); 
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
                     map.setCenter(pos);
-                    // 현재 내 위치 표시 (다람쥐)
+                    
+                    // [내 위치] = 탐험가 다람쥐 (squirrel.png)
                     new google.maps.Marker({ 
                         position: pos, 
                         map: map, 
-                        label: { text: "🐿️", fontSize: "30px" }, 
-                        zIndex: 999 
+                        icon: {
+                            url: "./squirrel.png",
+                            scaledSize: new google.maps.Size(70, 70), // 다람쥐는 좀 크게
+                            anchor: new google.maps.Point(35, 35)
+                        },
+                        zIndex: 200 // 다른 마커보다 위에 보이게
                     });
                 });
             }
         }
 
-        // --- 2. [요청반영] 정복 모드 시작 (위치 조정 단계) ---
         function startConquestMode() {
             if (!navigator.geolocation) { alert("위치 정보를 사용할 수 없습니다."); return; }
             
@@ -235,178 +367,468 @@
                 const currentPos = { lat: currentLat, lng: currentLng };
 
                 map.setCenter(currentPos);
-                map.setZoom(18); // 조정하기 쉽게 더 확대
+                map.setZoom(18);
 
-                // 이미 조정 중이면 리셋
-                if(activeSelectionMarker) activeSelectionMarker.setMap(null);
-                if(activeCircle) activeCircle.setMap(null);
+                clearConquestUI();
 
-                // 2. [요청반영] 100m 반경 원 그리기
+                // [수정] 탐색 반경 확대 (100 -> 150)
                 activeCircle = new google.maps.Circle({
-                    strokeColor: "#8B4513",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: "#8B4513",
-                    fillOpacity: 0.15,
-                    map: map,
-                    center: currentPos,
-                    radius: 100 // 100미터
+                    strokeColor: "#8B4513", strokeOpacity: 0.8, strokeWeight: 2,
+                    fillColor: "#8B4513", fillOpacity: 0.1,
+                    map: map, center: currentPos, radius: 150,
+                    zIndex: 1, clickable: false 
                 });
 
-                // 2. [요청반영] 드래그 가능한 마커 생성
                 activeSelectionMarker = new google.maps.Marker({
-                    position: currentPos,
-                    map: map,
-                    draggable: true, // 드래그 가능!
-                    label: { text: "🌰", fontSize: "40px" }, // 3. [요청반영] 도토리 아이콘
-                    animation: google.maps.Animation.DROP
+                    position: currentPos, 
+                    map: map, 
+                    draggable: true,
+                    icon: {
+                        url: "./acorn.png",
+                        scaledSize: new google.maps.Size(60, 60), // 드래그할 때 잘 보이게 큼직하게
+                        anchor: new google.maps.Point(30, 30)
+                    },
+                    animation: google.maps.Animation.DROP, 
+                    zIndex: 9999
                 });
 
-                // UI 변경 (정복버튼 숨기고, 확정버튼 표시)
+                // [1] 주변 건물 정보 로드 (파란 점)
+                searchNearbyPlaces(currentPos);
+
+                // [2] 드래그 시작: 라벨 표시
+                activeSelectionMarker.addListener('dragstart', () => {
+                    targetLabel.style.display = 'block';
+                    targetLabel.innerText = "어디에 심을까? 👀";
+                    targetLabel.style.borderColor = "#8B4513";
+                    targetLabel.style.color = "#8B4513";
+                });
+
+                // [3] 드래그 중: 파란 점 근처면 자석 효과 (DOM 직접 제어 -> 빠름)
+                activeSelectionMarker.addListener('drag', () => {
+                    checkDragHover();
+                });
+
+                // [4] 드래그 종료: 파란 점에 안 걸렸으면 Places API로 "가장 가까운 건물" 검색
+                // [수정 1] startConquestMode 함수 내부의 'dragend' 리스너를 이걸로 교체하세요.
+                activeSelectionMarker.addListener('dragend', () => {
+                    // [핵심 해결책] 마커를 놓는 순간, 기존에 저장된 장소 정보를 '무조건' 삭제합니다.
+                    selectedSpotData = null; 
+                    
+                    // 라벨도 "확인 중"으로 즉시 변경해서 시각적으로 피드백을 줍니다.
+                    targetLabel.innerText = "위치 확인 중... ⏳";
+                    targetLabel.style.color = "#888";
+                    targetLabel.style.borderColor = "#888";
+
+                    const pos = activeSelectionMarker.getPosition();
+                    
+                    // 바로 API 검색 시작
+                    findExactBuildingName(pos);
+                });
+
                 document.getElementById('conquer-btn').style.display = 'none';
-                document.getElementById('confirm-btn').style.display = 'block';
+                document.getElementById('confirm-group').style.display = 'flex';
                 document.getElementById('guide-msg').style.display = 'block';
+                targetLabel.style.display = 'block'; // 시작할 때 라벨 띄우기
 
             }, () => {
                 alert("GPS 위치를 가져오는데 실패했습니다.");
             });
         }
 
-        // --- 위치 확정 및 저장 ---
+        function searchNearbyPlaces(center) {
+            if (!placesService) return;
+            const request = {
+                location: center,
+                radius: 150, // 검색 반경 확대
+                type: ['establishment'] 
+            };
+            placesService.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    results.forEach(place => createBlueDot(place));
+                }
+            });
+        }
+
+        function createBlueDot(place) {
+            const dot = new google.maps.Circle({
+                strokeColor: "#2196F3", strokeOpacity: 0.8, strokeWeight: 1,
+                fillColor: "#2196F3", fillOpacity: 0.5,
+                map: map, center: place.geometry.location, radius: 6,
+                zIndex: 500, clickable: false
+            });
+
+            targetSpots.push({
+                marker: dot,
+                location: place.geometry.location,
+                name: place.name,
+                placeId: place.place_id
+            });
+        }
+
+        // 드래그 중 자석 효과 (UI 딜레이 없이 라벨 업데이트)
+        function checkDragHover() {
+            if (targetSpots.length === 0) return;
+
+            const acornPos = activeSelectionMarker.getPosition();
+            let nearestSpot = null;
+            let minDistance = 9999;
+
+            targetSpots.forEach(spot => {
+                if (google.maps.geometry) {
+                    const dist = google.maps.geometry.spherical.computeDistanceBetween(acornPos, spot.location);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        nearestSpot = spot;
+                    }
+                }
+            });
+
+            // [수정] 감지 거리를 15m -> 30m로 완화하여 더 잘 붙게 함
+            if (nearestSpot && minDistance < 30) {
+                selectedSpotData = nearestSpot;
+                targetLabel.innerText = "✨ " + nearestSpot.name;
+                targetLabel.style.borderColor = "#2196F3"; // 파란색 강조
+                targetLabel.style.color = "#1565C0";
+            } else {
+                selectedSpotData = null;
+                targetLabel.innerText = "새로운 장소 개척 중... 🌱";
+                targetLabel.style.borderColor = "#8B4513";
+                targetLabel.style.color = "#8B4513";
+            }
+        }
+
+        // [중요] 드래그 끝났을 때 API로 정확한 건물명 가져오기
+        // [수정된 함수] Places API 실패 시 즉시 주소 검색으로 전환
+// [수정 2] 이 함수 전체를 덮어씌우세요.
+        function findExactBuildingName(latLng) {
+            // 1. Places API에 주변 정보 요청
+            const request = {
+                location: latLng,
+                rankBy: google.maps.places.RankBy.DISTANCE, // 거리순 (가장 가까운거)
+                type: 'point_of_interest' // 모든 주요 시설물 검색
+            };
+
+            placesService.nearbySearch(request, (results, status) => {
+                // 2. 결과가 성공적으로 있고, 목록이 비어있지 않은 경우
+                if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+                    const nearestPlace = results[0];
+                    const placeName = nearestPlace.name;
+
+                    // 라벨 업데이트
+                    targetLabel.innerText = "📍 " + placeName;
+                    targetLabel.style.borderColor = "#8B4513";
+                    targetLabel.style.color = "#8B4513";
+
+                    // 데이터 저장
+                    selectedSpotData = {
+                        name: placeName,
+                        placeId: nearestPlace.place_id,
+                        location: nearestPlace.geometry.location
+                    };
+                } 
+                // 3. 건물이 안 잡히면(ZERO_RESULTS 등) -> 주소 검색으로 즉시 전환
+                else {
+                    // 여기가 실행되어야 "이전 이름"이 안 남고 "주소"로 바뀜
+                    updateAddressFallback(latLng);
+                }
+            });
+        }
+
+        // [수정된 함수] 주소 검색 로직 강화 (아파트 동/호수 표현)
+        function updateAddressFallback(latLng) {
+            geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    // 주소 분석
+                    let bestName = "";
+                    let dongName = "";
+                    let buildingName = "";
+
+                    // 주소 구성요소 뜯어보기
+                    results[0].address_components.forEach(comp => {
+                        if (comp.types.includes('premise')) buildingName = comp.long_name; // 건물명 (ex: 103동)
+                        if (comp.types.includes('sublocality_level_2') || comp.types.includes('neighborhood')) dongName = comp.long_name; // 동 (ex: 사당동)
+                        if (comp.types.includes('point_of_interest')) bestName = comp.long_name; // 혹시라도 잡히는 건물명
+                    });
+
+                    // 가장 적절한 이름 조합하기
+                    // 1순위: 포맷된 주소의 앞부분 (건물명 포함된 경우)
+                    // 구글 주소 포맷: "대한민국 서울특별시 XX구 XX동 123-4 AA아파트 103동"
+                    const formatted = results[0].formatted_address;
+                    
+                    // "103동" 같은 구체적인 건물 정보가 있으면 그걸 씀
+                    if (buildingName) {
+                        bestName = `${dongName} ${buildingName}`;
+                    } else if (bestName) {
+                        // do nothing, use bestName
+                    } else {
+                        // 도로명 주소나 지번 주소에서 앞부분(국가, 시) 떼고 나머지
+                        // 예: "대한민국 서울특별시 동작구 사당동" -> "동작구 사당동"
+                        const parts = formatted.split(' ');
+                        if(parts.length > 2) bestName = parts.slice(2).join(' ');
+                        else bestName = formatted;
+                    }
+
+                    targetLabel.innerText = "🏠 " + bestName;
+                    targetLabel.style.borderColor = "#555";
+                    targetLabel.style.color = "#333";
+                    
+                    selectedSpotData = null; // 일반 좌표 모드
+                } else {
+                    targetLabel.innerText = "🚩 위치 지정됨";
+                    console.log("Geocoding 실패: " + status);
+                }
+            });
+        }
+
+        function updateAddressFallback(latLng) {
+            geocoder.geocode({ location: latLng }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    const highlightName = getBuildingOrRoadName(results);
+                    targetLabel.innerText = "🏠 " + highlightName;
+                    targetLabel.style.borderColor = "#8B4513";
+                    targetLabel.style.color = "#555";
+                    selectedSpotData = null; // 일반 좌표 저장 모드
+                } else {
+                    targetLabel.innerText = "🚩 위치 지정됨";
+                }
+            });
+        }
+
+        function getBuildingOrRoadName(results) {
+            let building = "", dong = "", road = "";
+            const components = results[0].address_components;
+            components.forEach(c => {
+                const t = c.types;
+                if (t.includes('point_of_interest') || t.includes('establishment') || t.includes('premise')) building = c.long_name;
+                if (t.includes('sublocality_level_2') || t.includes('neighborhood')) dong = c.long_name;
+                if (t.includes('route')) road = c.long_name;
+            });
+            if (building) return building; // 건물명 우선
+            if (road) return `${dong} ${road}`;
+            return "이름 모를 곳";
+        }
+
+        function cancelConquestMode() {
+            clearConquestUI();
+            targetLabel.style.display = 'none';
+            document.getElementById('conquer-btn').style.display = 'flex';
+            document.getElementById('confirm-group').style.display = 'none';
+            document.getElementById('guide-msg').style.display = 'none';
+        }
+
+        function clearConquestUI() {
+            if(activeSelectionMarker) activeSelectionMarker.setMap(null);
+            if(activeCircle) activeCircle.setMap(null);
+            targetSpots.forEach(spot => spot.marker.setMap(null));
+            targetSpots = [];
+            selectedSpotData = null;
+            activeSelectionMarker = null;
+            activeCircle = null;
+        }
+
         function confirmLocationAndSave() {
             if(!activeSelectionMarker) return;
-
-            // 최종 선택된 위치 가져오기
-            const finalPos = activeSelectionMarker.getPosition();
-            const lat = finalPos.lat();
-            const lng = finalPos.lng();
-
-            // 4. [요청반영] CSS 애니메이션 실행 (GIF 대신)
             const overlay = document.getElementById('action-overlay');
             overlay.style.display = 'flex';
 
-            // 2초 뒤에 데이터 저장 및 UI 복귀
             setTimeout(() => {
-                saveData(lat, lng);
+                if (selectedSpotData) {
+                    // 건물/파란 점 데이터로 저장
+                    saveWithPlaceData(selectedSpotData);
+                } else {
+                    // 일반 좌표 데이터로 저장
+                    const pos = activeSelectionMarker.getPosition();
+                    saveData(pos.lat(), pos.lng());
+                }
                 overlay.style.display = 'none';
-                
-                // UI 복귀
-                document.getElementById('conquer-btn').style.display = 'flex';
-                document.getElementById('confirm-btn').style.display = 'none';
-                document.getElementById('guide-msg').style.display = 'none';
-                
-                // 조정용 마커/원 제거
-                activeSelectionMarker.setMap(null);
-                activeCircle.setMap(null);
-                activeSelectionMarker = null;
-                activeCircle = null;
-
-            }, 2500); // 애니메이션 시간 얼추 맞춤
+                cancelConquestMode(); 
+            }, 2500); 
         }
 
-        function saveData(lat, lng) {
-            // 위치 기반 주소 변환 (Geocoding)
-            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                let country = "미지의 땅", region = "어딘가", flag = "🏳️";
-                
+        function saveWithPlaceData(spot) {
+            geocoder.geocode({ 'placeId': spot.placeId }, (results, status) => {
+                let country = "미지의 땅", flag = "🏳️";
+                let fullAddress = spot.name; // 기본값은 건물명
+
                 if (status === "OK" && results[0]) {
-                    // 주소 구성요소 분석
+                    // 상세 주소 가져오기
+                    const detail = getFullDetailedAddress(results[0].address_components);
+                    fullAddress = `${detail} ${spot.name}`; // "강남구 테헤란로 스타벅스" 식
+
                     results[0].address_components.forEach(comp => {
                         if (comp.types.includes("country")) {
                             country = comp.long_name;
-                            if(country === "대한민국") flag = "🇰🇷";
-                            else if(country === "미국") flag = "🇺🇸";
-                            else if(country === "일본") flag = "🇯🇵";
-                            else flag = "🚩";
-                        }
-                        // 1. [요청반영] 행정구역 명칭 (시/도 혹은 구/군)
-                        if (comp.types.includes("administrative_area_level_1") || comp.types.includes("locality")) {
-                             region = comp.long_name;
-                        }
-                        // 동/읍/면 정보가 있으면 그걸로 region 덮어쓰기 (더 상세하게)
-                        if (comp.types.includes("sublocality_level_2") || comp.types.includes("neighborhood")) {
-                             region = comp.long_name;
+                            if(country === "대한민국") flag = "🇰🇷"; else if(country === "미국") flag = "🇺🇸"; else if(country === "일본") flag = "🇯🇵";
                         }
                     });
                 }
-
-                const newConquest = {
-                    id: Date.now(),
-                    lat: lat, 
-                    lng: lng,
-                    time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
-                    country: country,
-                    region: region, // 동 단위 혹은 구 단위
-                    flag: flag,
-                    placeName: `${region}의 도토리`, // 기본 이름
-                    note: "영역 표시 완료! 든든하다."
-                };
-
-                let list = getList();
-                list.push(newConquest);
-                saveList(list);
-                
-                addMarker(newConquest); // 지도에 고정 마커 추가
-                if(navigator.vibrate) navigator.vibrate(200);
+                saveToStorage({ lat: spot.location.lat(), lng: spot.location.lng(), country, flag, placeName: fullAddress });
             });
         }
 
-        // 지도에 마커 찍기 (저장된 데이터)
+        function saveData(lat, lng) {
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                let country = "미지의 땅", fullAddress = "어딘가", flag = "🏳️";
+                if (status === "OK" && results[0]) {
+                    fullAddress = getFullDetailedAddress(results[0].address_components);
+                    results[0].address_components.forEach(comp => {
+                        if (comp.types.includes("country")) {
+                            country = comp.long_name;
+                            if(country === "대한민국") flag = "🇰🇷"; else if(country === "미국") flag = "🇺🇸"; else if(country === "일본") flag = "🇯🇵";
+                        }
+                    });
+                }
+                saveToStorage({ lat, lng, country, flag, placeName: fullAddress });
+            });
+        }
+
+        function saveToStorage(data) {
+            const newConquest = {
+                id: Date.now(),
+                lat: data.lat, lng: data.lng,
+                time: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
+                country: data.country, placeName: data.placeName, flag: data.flag,
+                note: "영역 표시 완료! 든든하다."
+            };
+            let list = getList();
+            list.push(newConquest);
+            saveList(list);
+            addMarker(newConquest);
+            if(navigator.vibrate) navigator.vibrate(200);
+        }
+
+        function getFullDetailedAddress(components) {
+            let parts = { admin: '', locality: '', sublocality: '', dong: '', road: '', building: '' };
+            components.forEach(comp => {
+                const t = comp.types;
+                if(t.includes('administrative_area_level_1')) parts.admin = comp.long_name;
+                else if(t.includes('locality') || t.includes('administrative_area_level_2')) parts.locality = comp.long_name;
+                else if(t.includes('sublocality_level_1')) parts.sublocality = comp.long_name;
+                else if(t.includes('sublocality_level_2') || t.includes('neighborhood')) parts.dong = comp.long_name;
+                else if(t.includes('route')) parts.road = comp.long_name;
+            });
+            // 건물명은 이미 앞에서 붙였으므로 여기선 주소만
+            let addressArray = [parts.locality, parts.sublocality, parts.dong, parts.road];
+            return addressArray.filter(p => p).join(' ');
+        }
+
         function addMarker(data) {
+            // [정복 마커] = 도토리 (acorn.png)
             const marker = new google.maps.Marker({
                 position: { lat: data.lat, lng: data.lng },
+                map: map, 
+                icon: {
+                    url: "./acorn.png",
+                    scaledSize: new google.maps.Size(40, 40), // 지도에 박힌 건 적당한 크기로
+                    anchor: new google.maps.Point(20, 20)
+                },
+                zIndex: 100
+            });
+
+            // 2. 정복한 영역 표시 (반투명한 원) - 이건 그대로 유지
+            const territoryCircle = new google.maps.Circle({
+                strokeColor: "#FF5722", 
+                strokeOpacity: 0.8,
+                strokeWeight: 1,
+                fillColor: "#FF5722",   
+                fillOpacity: 0.35,      
                 map: map,
-                // 3. [요청반영] 똥(💩) 대신 도토리(🌰) 아이콘 사용
-                label: { text: "🌰", fontSize: "20px" } 
+                center: { lat: data.lat, lng: data.lng },
+                radius: 40,             
+                zIndex: 50
             });
 
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<div style="text-align:center; padding:5px;">
-                            <div style="font-size:16px; font-weight:bold;">${data.placeName}</div>
-                            <div style="font-size:12px; color:#555;">${data.time}</div>
-                          </div>`
-            });
-
+            const infoContent = `
+                <div class="infowindow-content" style="text-align:center; padding:5px;">
+                    <div style="font-size:14px; font-weight:bold; margin-bottom:4px; max-width:200px; word-break:keep-all;">${data.placeName}</div>
+                    <div style="font-size:11px; color:#666;">${data.time}</div>
+                    <button onclick="deleteConquestGlobal(${data.id})">🗑 삭제</button>
+                </div>
+            `;
+            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
+            
             marker.addListener("click", () => infoWindow.open(map, marker));
+            territoryCircle.addListener("click", () => infoWindow.open(map, marker));
+
+            allMarkers[data.id] = { marker: marker, circle: territoryCircle };
         }
 
-        /* --- 데이터 관리 (localStorage) --- */
+        window.deleteConquestGlobal = function(id) {
+            if(!confirm("정말 이 도토리를 파내시겠습니까?")) return;
+            
+            let list = getList();
+            list = list.filter(item => item.id !== id);
+            saveList(list); 
+
+            // 지도에서 마커와 원(영역) 모두 제거
+            if (allMarkers[id]) { 
+                allMarkers[id].marker.setMap(null); // 마커 삭제
+                allMarkers[id].circle.setMap(null); // 원 삭제
+                delete allMarkers[id]; 
+            }
+            
+            closeModal();
+        }
+
         function getList() { return JSON.parse(localStorage.getItem('conquestList')) || []; }
         function saveList(list) { localStorage.setItem('conquestList', JSON.stringify(list)); renderList(); }
         
         function loadConquests() {
+            allMarkers = {}; 
             getList().forEach(item => addMarker(item));
             renderList();
         }
 
         function renderList() {
-            const list = getList().reverse();
+            const list = getList(); // 순서 반전 없이 원본 가져옴 (최신순 정렬은 아래에서)
+            // 최신순으로 정렬 (ID가 시간 기반이므로 ID 큰 게 최신)
+            list.sort((a, b) => b.id - a.id);
+
             const container = document.getElementById('log-list-area');
             container.innerHTML = "";
             document.getElementById('total-count').innerText = `${list.length}개의 도토리 심음`;
             
+            // 통계 표시
             const countryCounts = {};
             list.forEach(item => { countryCounts[item.country] = (countryCounts[item.country] || 0) + 1; });
-            
             let statsText = [];
             for (const [country, count] of Object.entries(countryCounts)) statsText.push(`${country} ${count}`);
             document.getElementById('country-stats').innerText = statsText.join('  |  ');
 
+            // [핵심] 국가별 그룹핑
+            // 데이터를 { "대한민국": [item1, item2], "프랑스": [item3] } 형태로 만듦
+            const grouped = {};
             list.forEach(item => {
-                const div = document.createElement('div'); div.className = 'log-item';
-                div.innerHTML = `
-                    <div class="log-header">
-                        <div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div>
-                        <button class="btn-edit" onclick="openEditModal(${item.id})">✎</button>
-                    </div>
-                    <div style="font-size:12px; color:#777; margin-bottom:8px;">${item.country} ${item.region} | ${item.time}</div>
-                    <div class="log-note">${item.note}</div>
-                `;
-                container.appendChild(div);
+                const key = item.country || "미지의 땅";
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(item);
             });
+
+            // 그룹핑된 데이터를 화면에 출력
+            for (const [country, items] of Object.entries(grouped)) {
+                // 1. 국가 헤더 생성 ([ 대한민국 ])
+                const header = document.createElement('div');
+                header.className = 'country-header';
+                header.innerText = `[ ${country} ]`;
+                container.appendChild(header);
+
+                // 2. 해당 국가의 아이템들 생성
+                items.forEach(item => {
+                    const div = document.createElement('div'); 
+                    div.className = 'log-item';
+                    div.innerHTML = `
+                        <div class="log-header">
+                            <div><span style="font-size:24px; margin-right:5px;">${item.flag}</span> <span class="log-place">${item.placeName}</span></div>
+                            <button class="btn-edit" onclick="openEditModal(${item.id})">✎</button>
+                        </div>
+                        <div style="font-size:12px; color:#777; margin-bottom:8px;">${item.time}</div>
+                        <div class="log-note">${item.note}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
         }
 
-        /* --- 모달 및 탭 기능 (기존 동일) --- */
         function openEditModal(id) {
             const item = getList().find(x => x.id === id);
             if(item) {
@@ -425,17 +847,16 @@
             if(index !== -1) {
                 list[index].placeName = document.getElementById('edit-place').value;
                 list[index].note = document.getElementById('edit-note').value;
-                saveList(list); closeModal();
+                saveList(list); 
+                if(allMarkers[id]) allMarkers[id].setMap(null);
+                addMarker(list[index]); 
+                closeModal();
             }
         }
         
-        function deleteLog() {
-            if(confirm("이 도토리를 파내시겠습니까?")) {
-                const id = parseInt(document.getElementById('edit-id').value);
-                let list = getList();
-                list = list.filter(x => x.id !== id);
-                saveList(list); closeModal(); location.reload();
-            }
+        function deleteLogFromModal() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            deleteConquestGlobal(id);
         }
         
         function switchTab(tabName) {
